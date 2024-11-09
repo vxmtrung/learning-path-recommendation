@@ -5,10 +5,16 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from rest_framework import generics
+
+from majors.models import Major
+
 
 from .models import Course
 from .serializers import CourseSerializer
 import csv
+
 # Create your views here.
 
 
@@ -62,3 +68,8 @@ class CourseImportView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+def get_courses_by_major(major_id):
+    major = get_object_or_404(Major, major_id=major_id)
+    courses = Course.objects.filter(majors=major).order_by('semester')
+    return courses
