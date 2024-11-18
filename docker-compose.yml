@@ -23,6 +23,18 @@ services:
     networks:
       - backend
 
+  pgadmin:
+    image: dpage/pgadmin4:8.13.0
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8888:80"
+    env_file:
+      - .env
+    networks:
+      - backend
+
 volumes:
   postgres:
     driver: local
