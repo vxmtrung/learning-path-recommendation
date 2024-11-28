@@ -35,11 +35,23 @@ class LearningPathElement:
 def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     global learning_path
     global current_semester
+    global course_group_c
+    global num_course_group_c
+    global num_course_group_d
     global learn_summer_semester
     global credit_summer_semester
-    global num_course_group_c
     global total_course_group_c
     global credit_in_semester
+    
+    learning_path = []
+    current_semester = 0
+    course_group_c = []
+    num_course_group_c = 0
+    num_course_group_d = 0
+    learn_summer_semester = False
+    credit_summer_semester = 0
+    total_course_group_c = 0
+    credit_in_semester = 0
     
     if learner["over_learn"] == True:
         credit_in_semester = learner["over_learn_credit"]
