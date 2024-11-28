@@ -73,3 +73,6 @@ def get_courses_by_major(major_id):
     major = get_object_or_404(Major, major_id=major_id)
     courses = Course.objects.filter(majors=major).order_by('semester')
     return courses
+
+def get_all_course():
+    return Course.objects.all()

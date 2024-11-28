@@ -8,9 +8,12 @@ from rest_framework.views import APIView
 
 from courses.views import get_courses_by_major
 from learnlog.views import get_learn_log
+from predict.views import predict_score
 
 import recommend.course_tree as CourseTree
 import recommend.recommend as Recommend
+
+from decimal import Decimal, ROUND_HALF_UP
 # Create your views here.
 class RecommendView(APIView):
     def post(self, request, *args, **kwargs):
@@ -30,9 +33,23 @@ class RecommendView(APIView):
         
         # Get course list by major
         course_list = get_courses_by_major(input_data['major'])
+        scores = predict_score(input_data['student_id'], course_list)
+        score_dict = {item['course_id']: item['score'] for item in scores}
+        for course in course_list:
+            raw_score = score_dict.get(course.course_id, None)
+            if raw_score is not None:
+                course.predict_score = float(Decimal(raw_score).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+            else:
+                course.predict_score = None
+            
+        # for course in course_list:
+        #     print(f"{course.course_name} ({course.course_id}) - Predict Score: {course.predict_score}")
+        
         
          # Get learn log
         learn_log = get_learn_log()
+        learn_log = [log for log in learn_log if log.learned == True]
+        
         
         # Get course group c in course list
         course_group_c = [course for course in course_list if course.is_group_c]
@@ -40,8 +57,10 @@ class RecommendView(APIView):
         # Get last 3 semester
         last_3_semester = self.get_last_3_semester(int(input_data['current_semester']))
         
-        # Filter group c subjects studied in the last 3 semesters
+        # Filter group c subjects studied in the last 3 semesters and had the highest prediction score
         course_group_c = self.resort_course_group_c(course_group_c, last_3_semester, learn_log)
+        # for course in course_group_c:
+        #     print(f"{course.course_name} ({course.course_id}) - Predict Score: {course.predict_score} - Note: {course.note}")
         
         ### Replace the group c subjects in the course list with the group c subjects that have been studied in the last 3 semesters
         course_list = self.replace_sublistcourse(course_list, course_group_c)
@@ -52,7 +71,6 @@ class RecommendView(APIView):
         # Create Course Graph
         course_tree = CourseTree.create_course_tree(course_list)
          
-        # CourseTree.print_tree(course_tree)
         # Recommend Learing Path 
         learner = {
             "english_level": input_data['english_level'],
@@ -92,7 +110,8 @@ class RecommendView(APIView):
             if not check:
                 course.note = "Mon hoc chua duoc mo trong 3 hoc ky chinh gan nhat"
                 course_group_c_not_in_last_3_semester.append(course)
-        course_group_c_resort.sort(key=lambda x: x.average_score, reverse=True)
+        course_group_c_resort.sort(key=lambda x: x.predict_score, reverse=True)
+        course_group_c_not_in_last_3_semester.sort(key=lambda x: x.predict_score, reverse=True)
         return course_group_c_resort + course_group_c_not_in_last_3_semester
 
     def replace_sublistcourse(self, course_list, course_group_c):

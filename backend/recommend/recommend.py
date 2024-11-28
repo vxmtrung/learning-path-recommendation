@@ -19,11 +19,18 @@ class LearningPathElement:
         return {
             "semester": self.semester,
             "courses": [
-                {"course_id": course.course_id, "course_name": course.course_name, "credit": course.credit, "note": course.note}
+                {
+                    "course_id": course.course_id,
+                    "course_name": course.course_name,
+                    "credit": course.credit,
+                    **({"predict_score": course.predict_score} if course.course_name != "Tự chọn tự do" else {}),
+                    "note": course.note,
+                }
                 for course in self.courses
             ],
-            "total_credit": self.credit
+            "total_credit": self.credit,
         }
+
         
 def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     global learning_path
