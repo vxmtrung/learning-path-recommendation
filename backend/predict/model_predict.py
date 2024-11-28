@@ -74,5 +74,8 @@ class CF:
 
     def pred(self, u, i, normalized=1):
         if self.uuCF:
-            return self.__pred(u, i, normalized)
+            score = self.__pred(u, i, normalized)
+            if score > 10:
+                return 10
+            return score
         return self.__pred(i, u, normalized)

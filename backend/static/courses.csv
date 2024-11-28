@@ -1,4 +1,4 @@
-course_id,course_name,majors, prerequisites,semester,count_learner,average_score,credit,is_group_c ,is_group_d
+course_code,course_name,majors, prerequisites,semester,count_learner,average_score,credit,is_group_c ,is_group_d
 LA1003,Anh văn 1,1|2|3|4|5|6,,1,1,MT,2,0,0
 MT1003,Giải tích 1,1|2|3|4|5|6,,1,1,9.5,4,0,0
 PH1003,Vật lý 1,1|2|3|4|5|6,,1,1,8.5,4,0,0

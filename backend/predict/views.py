@@ -22,7 +22,7 @@ class PredictView(APIView):
       
         # Get all course
         course_data = get_all_course()
-        course_data = [course.course_id for course in course_data]
+        course_data = [course.course_code for course in course_data]
         
         # Get learn log
         learn_log = get_learn_log()
@@ -44,6 +44,7 @@ class PredictView(APIView):
                     data.append([int(student), course, None])
         
         data = np.array(data)
+     
         student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
 
         course_ids = {v: i for i, v in enumerate(np.unique(data[:, 1]))}
@@ -65,7 +66,7 @@ def predict_score(student_id, course_list):
     
     # Get all course
     course_data = get_all_course()
-    course_data = [course.course_id for course in course_data]
+    course_data = [course.course_code for course in course_data]
     
     # Get learn log
     learn_log = get_learn_log()
@@ -92,4 +93,4 @@ def predict_score(student_id, course_list):
     
     with open("model.pkl", "rb") as f:
         loaded_model = pickle.load(f)
-    return [{"course_id": course.course_id, "score": float(loaded_model.pred(student_ids[int(student_id)], course_ids[course.course_id], 0))} for course in course_list]
+    return [{"course_id": course.course_code, "score": float(loaded_model.pred(student_ids[int(student_id)], course_ids[course.course_code], 0))} for course in course_list]

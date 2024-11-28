@@ -21,6 +21,7 @@ class LearningPathElement:
             "courses": [
                 {
                     "course_id": course.course_id,
+                    "course_code": course.course_code,
                     "course_name": course.course_name,
                     "credit": course.credit,
                     **({"predict_score": course.predict_score} if course.course_name != "Tự chọn tự do" else {}),
@@ -118,7 +119,7 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph):
                 return
             
             # Check free elective course
-            if course_graph.course_node.course_id in ["TCTD1", "TCTD2", "TCTD3"]:
+            if course_graph.course_node.course_code in ["TCTD1", "TCTD2", "TCTD3"]:
                 if int(learner["course_free_elective"]) > 0:
                     learner["course_free_elective"] = int(learner["course_free_elective"]) - 1
                     check_prerequisite_and_add_learning_path(int(learner["english_level"]), course_graph.course_node, learner_log, unlearned_course)
@@ -151,10 +152,10 @@ def add_english_course_to_learning_path(learner_log, unlearned_course):
         
 ### If course was learned, remove it unlearned_course
 def is_subject_learned(course, learner_log, unlearned_course):
-    if course.course_id in ["LA1003", "LA1005", "LA1007", "LA1009"]:
+    if course.course_code in ["LA1003", "LA1005", "LA1007", "LA1009"]:
         return True
     for log in learner_log:
-        if log.course.course_id == course.course_id:
+        if log.course.course_code == course.course_code:
             unlearned_course.remove(course)
             return True
     return False
@@ -164,25 +165,25 @@ def check_prerequisite_and_add_learning_path(english_level, course, leaner_log, 
     ### If this course has subject prerequisite: 2 cases
     ### Case 1: Subject prerequisite was learned (In leaner_log) -> add learning_path this semester
     ### Case 2: Subject prerequisite was recommend (Not in unlearned_course) -> add learning_path next semester
-    english_course = get_english_course_level(course.course_id)
-    if course.prerequisites.exists() and english_level >= english_course:
-        if course.prerequisites.first() in leaner_log:
+    english_course = get_english_course_level(course.course_code)
+    if course.prerequisites and english_level >= english_course:
+        if course.prerequisites in leaner_log:
             add_course_to_learning_path_in_case_prerequisite_learned(course, unlearned_course)
         else:
             add_course_to_learning_path_in_case_prerequisite_unlearned(course, unlearned_course)
     
     ### Check English
-    if not course.prerequisites.exists() and english_level < english_course:
+    if not course.prerequisites and english_level < english_course:
         add_course_to_learning_path_with_english(course, english_course, unlearned_course)
     
     ### Check subject prerequisite and English
-    if course.prerequisites.exists() and english_level < english_course:
-        if course.prerequisites.first() in leaner_log:
+    if course.prerequisites and english_level < english_course:
+        if course.prerequisites in leaner_log:
             add_course_to_learning_path_with_english(course, english_course, unlearned_course)
         else:
             add_course_to_learning_path_with_prerequisite_and_english(course, english_course, unlearned_course)
     
-    if not course.prerequisites.exists() and english_level >= english_course:
+    if not course.prerequisites and english_level >= english_course:
         add_course_to_learning_path(course, unlearned_course)
             
 def next_semester(semester):
@@ -196,14 +197,14 @@ def next_semester(semester):
     if semester%10 == 3:
         return semester + 10 - 2
      
-def get_english_course_level(course_id):
-    if  course_id == "DATH":
+def get_english_course_level(course_code):
+    if  course_code == "DATH":
         return 3
-    if course_id == "DADN":
+    if course_code == "DADN":
         return 3
-    if course_id in ["TCTD1", "TCTD2", "TCTD3"]:
+    if course_code in ["TCTD1", "TCTD2", "TCTD3"]:
         return 1
-    return int(course_id[2])
+    return int(course_code[2])
             
 def add_course_to_learning_path_in_case_prerequisite_learned(course, unlearned_course):
     ### Add any semester has total credit <= 18
@@ -239,12 +240,12 @@ def add_course_to_learning_path_in_case_prerequisite_unlearned(course, unlearned
     global learning_path
     global credit_in_semester
     added_course = False
-    num_prerequisite = course.prerequisites.count()
+    num_prerequisite = 1
     
     for element in learning_path:
         if num_prerequisite != 0:
             for element_course in element.courses:
-                if element_course in course.prerequisites.all():
+                if element_course == course.prerequisites:
                     num_prerequisite = num_prerequisite - 1
         else:
             if element.credit + course.credit <= (int(credit_in_semester) if int(element.semester)%10 != 3 else int(credit_summer_semester)):
@@ -316,7 +317,7 @@ def add_course_to_learning_path_with_prerequisite_and_english(course, english_co
     ### If not any semester can add, create new node and add course to this new node
     global learning_path
     global credit_in_semester
-    num_prerequisite = course.prerequisites.count()
+    num_prerequisite = 1
     find_english_course = False
     added_course = False
     if english_course == 1:
@@ -330,7 +331,7 @@ def add_course_to_learning_path_with_prerequisite_and_english(course, english_co
     for element in learning_path:
         if num_prerequisite != 0 or not find_english_course:
             for element_course in element.courses:
-                if element_course in course.prerequisites.all():
+                if element_course == course.prerequisites:
                     num_prerequisite = num_prerequisite - 1
                 if element_course.course_name == english_course:
                     find_english_course = True

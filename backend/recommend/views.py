@@ -14,39 +14,30 @@ import recommend.course_tree as CourseTree
 import recommend.recommend as Recommend
 
 from decimal import Decimal, ROUND_HALF_UP
+
+from recommendlogs.models import RecommendLog
+from recommendlogs.serializers import RecommendLogSerializer
+
+from rest_framework import status
 # Create your views here.
 class RecommendView(APIView):
     def post(self, request, *args, **kwargs):
-        # input_data
-        # student_id
-        # english_level
-        # major
-        # learn_summer_semester
-        # credit_summer_semester
-        # course_free_elective
-        # over_learn
-        # over_learn_credit 
-        # current_semester
-        
         # Get data from request
         input_data = request.data
         
         # Get course list by major
         course_list = get_courses_by_major(input_data['major'])
         scores = predict_score(input_data['student_id'], course_list)
+        
         score_dict = {item['course_id']: item['score'] for item in scores}
         for course in course_list:
-            raw_score = score_dict.get(course.course_id, None)
+            raw_score = score_dict.get(course.course_code, None)
             if raw_score is not None:
                 course.predict_score = float(Decimal(raw_score).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
             else:
                 course.predict_score = None
             
-        # for course in course_list:
-        #     print(f"{course.course_name} ({course.course_id}) - Predict Score: {course.predict_score}")
-        
-        
-         # Get learn log
+        # Get learn log
         learn_log = get_learn_log()
         learn_log = [log for log in learn_log if log.learned == True]
         
@@ -60,7 +51,7 @@ class RecommendView(APIView):
         # Filter group c subjects studied in the last 3 semesters and had the highest prediction score
         course_group_c = self.resort_course_group_c(course_group_c, last_3_semester, learn_log)
         # for course in course_group_c:
-        #     print(f"{course.course_name} ({course.course_id}) - Predict Score: {course.predict_score} - Note: {course.note}")
+        #     print(f"{course.course_name} ({course.course_code}) - Predict Score: {course.predict_score} - Note: {course.note}")
         
         ### Replace the group c subjects in the course list with the group c subjects that have been studied in the last 3 semesters
         course_list = self.replace_sublistcourse(course_list, course_group_c)
@@ -85,7 +76,20 @@ class RecommendView(APIView):
         self.print_learning_path(learning_path_recommend)
         # Convert learning path to dictionary format
         learning_path_data = {"learning_path": [element.to_dict() for element in learning_path_recommend]}
-
+        
+        # Add log
+        recommend_logs = []
+        recommend_log = {
+            "student": input_data['student_id'],
+            "learning_path": json.dumps(learning_path_data)
+        }
+        serializer = RecommendLogSerializer(data=recommend_log)
+        if serializer.is_valid():
+            recommend_logs.append(RecommendLog(**serializer.validated_data))
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        RecommendLog.objects.bulk_create(recommend_logs)
+        
         # Return JsonResponse with pretty JSON formatting
         return JsonResponse(learning_path_data, json_dumps_params={'indent': 4, 'ensure_ascii': False})
 

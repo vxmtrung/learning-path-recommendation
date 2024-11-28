@@ -26,4 +26,6 @@ urlpatterns = [
     path('learnlogs/', include('learnlog.urls')),
     path('recommend/', include('recommend.urls')),
     path('predict/', include('predict.urls')),
+    path('recommendlogs/', include('recommendlogs.urls')),
+    path('syllabus/', include('syllabus.urls')),
 ]

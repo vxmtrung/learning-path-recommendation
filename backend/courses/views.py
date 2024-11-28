@@ -37,12 +37,11 @@ class CourseImportView(APIView):
             courses = []
             for row in csv_reader:
                 major_ids = row[2].split('|') if row[2] else []
-                prerequisite_ids = row[3].split('|') if row[3] else []
-                    
                  
                 course_data = {
-                    "course_id": row[0],
+                    "course_code": row[0],
                     "course_name": row[1],
+                    "prerequisites": row[3],
                     "semester": row[4],
                     "count_learner": row[5],
                     "average_score": None if row[6] == 'MT' else row[6],
@@ -57,7 +56,6 @@ class CourseImportView(APIView):
                     course = Course(**serializer.validated_data)
                     course.save()
                     course.majors.set(major_ids)
-                    course.prerequisites.set(prerequisite_ids)
                     courses.append(course)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

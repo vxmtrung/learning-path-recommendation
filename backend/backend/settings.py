@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'learnlog',
     'recommend',
     'predict',
+    'recommendlogs',
+    'syllabus'
 ]
 
 MIDDLEWARE = [
