@@ -42,3 +42,9 @@ class MajorImportView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class MajorListView(APIView):
+     def post(self, request, *args, **kwargs):
+        input_data = request.data
+        majors = Major.objects.filter(faculty = input_data["faculty"])
+        return Response(MajorSerializer(majors, many=True).data, status=status.HTTP_200_OK)

@@ -69,7 +69,8 @@ class RecommendView(APIView):
             "credit_summer_semester": input_data['credit_summer_semester'],
             "course_free_elective": input_data['course_free_elective'],
             "over_learn": input_data['over_learn'],
-            "over_learn_credit": input_data['over_learn_credit']
+            "over_learn_credit": input_data['over_learn_credit'],
+            "learn_to_improve": input_data['learn_to_improve'],
         }
         learning_path_recommend = Recommend.recommend(learner, learner_log, course_list, course_tree, int(input_data['current_semester']))
     

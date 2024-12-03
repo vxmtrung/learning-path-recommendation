@@ -52,3 +52,9 @@ class StudentImportView(APIView):
         
 def get_all_student():
     return Student.objects.all()
+
+class StudentListView(APIView):
+    def post(self, request, *args, **kwargs):
+        input_data = request.data
+        student = Student.objects.filter(student_id = input_data["student_id"])
+        return Response(StudentSerializer(student, many=True).data, status=status.HTTP_200_OK)

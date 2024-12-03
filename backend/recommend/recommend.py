@@ -9,6 +9,7 @@ learn_summer_semester = False
 credit_summer_semester = 0
 total_course_group_c = 0
 credit_in_semester = 0
+learned_course = []
 class LearningPathElement:
     def __init__(self, semester):
         self.semester = semester
@@ -43,6 +44,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     global credit_summer_semester
     global total_course_group_c
     global credit_in_semester
+    global learned_course
     
     learning_path = []
     current_semester = 0
@@ -54,7 +56,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     total_course_group_c = 0
     credit_in_semester = 0
     
-    if learner["over_learn"] == True:
+    if learner["over_learn"] == "True":
         credit_in_semester = learner["over_learn_credit"]
     else:
         credit_in_semester = 18
@@ -63,7 +65,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
         if course.is_group_c == True:
             total_course_group_c = total_course_group_c + 1
             
-    if learner["learn_summer_semester"] == True:
+    if learner["learn_summer_semester"] == "True":
         learn_summer_semester = True
         credit_summer_semester = int(learner["credit_summer_semester"])
     num_course_group_c = 5 + 3 - int(learner["course_free_elective"])
@@ -72,19 +74,19 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     current_semester = semester
     add_english_course_to_learning_path(learner_log, unlearned_course)
     travel_course_graph(learner, learner_log, unlearned_course, course_graph)
-    # learner_log = sorted(learner_log, key=lambda log: log.score)
-    # global learning_path
-    # for semester in learning_path:
-    #     if int(semester.semester)%10 == 3:
-    #         continue
-    #     if semester.credit<14:
-    #         for log in learner_log:
-    #             if int(semester.credit) + int(log.credit) <= 18:
-    #                 semester.courses.append(log)
-    #                 learner_log.remove(log)
-    #                 semester.credit = semester.credit + log.credit
-    #                 if semester.credit >= 14:
-    #                     break
+    if learner["learn_to_improve"] == "True":
+        learned_course = sorted(learned_course, key=lambda course: course.predict_score)
+        for semester in learning_path:
+            if int(semester.semester)%10 == 3:
+                continue
+            if semester.credit<11:
+                for course in learned_course:
+                    if int(semester.credit) + int(course.credit) <= 18:
+                        semester.courses.append(course)
+                        learned_course.remove(course)
+                        semester.credit = semester.credit + course.credit
+                        if semester.credit >= 11:
+                            break
     return learning_path
     
 ### Add english 
@@ -96,12 +98,14 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph):
     global course_group_c
     global num_course_group_c
     global num_course_group_d
-      
+    global learned_course
+    
     if course_graph.is_course == False:
         for child_node in course_graph.children:
             travel_course_graph(learner, learner_log, unlearned_course, child_node)
     else:
         if is_subject_learned(course_graph.course_node, learner_log, unlearned_course):
+            learned_course.append(course_graph.course_node)
             if course_graph.course_node.is_group_c == True:
                 course_group_c.append(course_graph.course_node)
         else:
