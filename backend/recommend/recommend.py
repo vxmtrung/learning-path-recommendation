@@ -56,8 +56,8 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     total_course_group_c = 0
     credit_in_semester = 0
     
-    if learner["over_learn"] == "True":
-        credit_in_semester = learner["over_learn_credit"]
+    if learner["over_learn"] == "1":
+        credit_in_semester = int(learner["over_learn_credit"])
     else:
         credit_in_semester = 18
     ### Caculate number of course group c
@@ -65,7 +65,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
         if course.is_group_c == True:
             total_course_group_c = total_course_group_c + 1
             
-    if learner["learn_summer_semester"] == "True":
+    if learner["learn_summer_semester"] == "1":
         learn_summer_semester = True
         credit_summer_semester = int(learner["credit_summer_semester"])
     num_course_group_c = 5 + 3 - int(learner["course_free_elective"])
@@ -74,7 +74,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     current_semester = semester
     add_english_course_to_learning_path(learner_log, unlearned_course)
     travel_course_graph(learner, learner_log, unlearned_course, course_graph)
-    if learner["learn_to_improve"] == "True":
+    if learner["learn_to_improve"] == "1":
         learned_course = sorted(learned_course, key=lambda course: course.predict_score)
         for semester in learning_path:
             if int(semester.semester)%10 == 3:
