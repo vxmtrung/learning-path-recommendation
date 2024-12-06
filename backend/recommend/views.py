@@ -52,9 +52,12 @@ class RecommendView(APIView):
         course_group_c = self.resort_course_group_c(course_group_c, last_3_semester, learn_log)
         # for course in course_group_c:
         #     print(f"{course.course_name} ({course.course_code}) - Predict Score: {course.predict_score} - Note: {course.note}")
-        
+    
         ### Replace the group c subjects in the course list with the group c subjects that have been studied in the last 3 semesters
         course_list = self.replace_sublistcourse(course_list, course_group_c)
+        # print("----------------------")
+        # for course in course_list:
+        #     print(f"{course.course_name} ({course.course_code}) - Predict Score: {course.predict_score} - Note: {course.note}")
     
         # Get learner log from learn log
         learner_log = [log for log in learn_log if log.student_id == input_data['student_id']]
@@ -123,21 +126,8 @@ class RecommendView(APIView):
     def replace_sublistcourse(self, course_list, course_group_c):
         course_list = list(course_list)
         indices = [course_list.index(course) for course in course_group_c if course in course_list]
-        if len(indices) == 0:
-            print("Không có phần tử nào trong course_list giống với course_group_c.")
-            return course_list
-        elif len(indices) == 1:
-            return course_list
-        elif len(indices) == 2:
-            if indices[0] + 1 == indices[1]:
-                start = indices[0]
-                end = indices[1]
-                course_list[start:end + 1] = course_group_c
-        else:
-            start = indices[0]
-            end = indices[-1]
-            course_list[start:end + 1] = course_group_c
-        return course_list
+        indices.sort()
+        return course_list[:indices[0]] + course_group_c + course_list[indices[-1] + 1:]
         
     def print_learning_path(self, learning_path_recommend):
         try:

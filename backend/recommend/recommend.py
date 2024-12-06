@@ -104,6 +104,7 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph):
         for child_node in course_graph.children:
             travel_course_graph(learner, learner_log, unlearned_course, child_node)
     else:
+        # print(course_graph.course_node.course_name)
         if is_subject_learned(course_graph.course_node, learner_log, unlearned_course):
             learned_course.append(course_graph.course_node)
             if course_graph.course_node.is_group_c == True:
