@@ -7,6 +7,9 @@ from rest_framework import status
 from syllabus.models import Syllabus
 from syllabus.serializers import SyllabusSerializer
 import csv
+
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 # Create your views here.
 class SyllabusImportView(APIView):
     def post(self, request, *args, **kwargs):
@@ -48,7 +51,8 @@ class SyllabusImportView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+      
+@method_decorator(csrf_exempt, name='dispatch')  
 class SyllabusListView(APIView):
     def post(self, request, *args, **kwargs):
         input_data = request.data

@@ -77,6 +77,8 @@ class RecommendView(APIView):
         }
         learning_path_recommend = Recommend.recommend(learner, learner_log, course_list, course_tree, int(input_data['current_semester']))
     
+        if (learning_path_recommend == "Môn nhóm C không đủ"):
+            return JsonResponse({"error": "Môn nhóm C không đủ"}, status=400)
         self.print_learning_path(learning_path_recommend)
         # Convert learning path to dictionary format
         learning_path_data = {"learning_path": [element.to_dict() for element in learning_path_recommend]}
