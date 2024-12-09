@@ -6,10 +6,13 @@ course_group_c = []
 num_course_group_c = 0
 num_course_group_d = 0
 learn_summer_semester = False
-credit_summer_semester = 0
 total_course_group_c = 0
-credit_in_semester = 0
+credit_in_semester = 18
+min_credit_in_semester = 11
 learned_course = []
+main_semester = []
+summer_semester = []
+
 class LearningPathElement:
     def __init__(self, semester):
         self.semester = semester
@@ -41,10 +44,12 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     global num_course_group_c
     global num_course_group_d
     global learn_summer_semester
-    global credit_summer_semester
     global total_course_group_c
     global credit_in_semester
     global learned_course
+    global main_semester
+    global summer_semester
+    global min_credit_in_semester
     
     learning_path = []
     current_semester = 0
@@ -52,22 +57,24 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     num_course_group_c = 0
     num_course_group_d = 0
     learn_summer_semester = False
-    credit_summer_semester = 0
     total_course_group_c = 0
-    credit_in_semester = 0
+    credit_in_semester = 18
+    main_semester = []
+    summer_semester = []
+    min_credit_in_semester = 11
     
-    if learner["over_learn"] == "1":
-        credit_in_semester = int(learner["over_learn_credit"])
-    else:
-        credit_in_semester = 18
     ### Caculate number of course group c
     for course in unlearned_course:
         if course.is_group_c == True:
             total_course_group_c = total_course_group_c + 1
-            
+      
+    if learner["over_learn"] == "1":
+        main_semester = learner["main_semester"]
+        
     if learner["learn_summer_semester"] == "1":
         learn_summer_semester = True
-        credit_summer_semester = int(learner["credit_summer_semester"])
+        summer_semester = learner["summer_semester"]
+        
     num_course_group_c = 5 + 3 - int(learner["course_free_elective"])
     if num_course_group_c > total_course_group_c:
         return "Môn nhóm C không đủ"
@@ -79,13 +86,13 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
         for semester in learning_path:
             if int(semester.semester)%10 == 3:
                 continue
-            if semester.credit<11:
+            if semester.credit<min_credit_in_semester:
                 for course in learned_course:
-                    if int(semester.credit) + int(course.credit) <= 18:
+                    if int(semester.credit) + int(course.credit) <= credit_in_semester:
                         semester.courses.append(course)
                         learned_course.remove(course)
                         semester.credit = semester.credit + course.credit
-                        if semester.credit >= 11:
+                        if semester.credit >= min_credit_in_semester:
                             break
     return learning_path
     
@@ -197,7 +204,8 @@ def next_semester(semester):
     if semester%10 == 2:
         global learn_summer_semester
         if learn_summer_semester:
-            return semester + 1
+            if semester + 1 in [int(semester["semester"]) for semester in summer_semester]:
+                return semester + 1
         return semester + 10 - 1
     if semester%10 == 3:
         return semester + 10 - 2
@@ -217,9 +225,20 @@ def add_course_to_learning_path_in_case_prerequisite_learned(course, unlearned_c
     ### If not any semester can add, create new node and add course to this new node
     global learning_path
     global credit_in_semester
+    global main_semester
+    global summer_semester
     added_course = False
     for element in learning_path:
-        if element.credit + course.credit <= (int(credit_in_semester) if int(element.semester)%10 != 3 else int(credit_summer_semester)):
+        credit = credit_in_semester
+        if int(element.semester) % 10 != 3:
+            for semester in main_semester:
+                if element.semester == int(semester["semester"]):
+                   credit = int(semester["credit"])
+        else:
+            for semester in summer_semester:
+                if element.semester == int(semester["semester"]):
+                    credit = int(semester["credit"])
+        if element.credit + course.credit <= credit:
             element.courses.append(course)
             added_course = True
             element.credit = element.credit + course.credit
@@ -244,6 +263,8 @@ def add_course_to_learning_path_in_case_prerequisite_unlearned(course, unlearned
     ### If not any semester can add, create new node and add course to this new node
     global learning_path
     global credit_in_semester
+    global main_semester
+    global summer_semester
     added_course = False
     num_prerequisite = 1
     
@@ -253,7 +274,16 @@ def add_course_to_learning_path_in_case_prerequisite_unlearned(course, unlearned
                 if element_course == course.prerequisites:
                     num_prerequisite = num_prerequisite - 1
         else:
-            if element.credit + course.credit <= (int(credit_in_semester) if int(element.semester)%10 != 3 else int(credit_summer_semester)):
+            credit = credit_in_semester
+            if int(element.semester) % 10 != 3:
+                for semester in main_semester:
+                    if element.semester == int(semester["semester"]):
+                        credit = int(semester["credit"])
+            else:
+                for semester in summer_semester:
+                    if element.semester == int(semester["semester"]):
+                        credit = int(semester["credit"])
+            if element.credit + course.credit <= credit:
                 element.courses.append(course)
                 added_course = True
                 element.credit = element.credit + course.credit
@@ -279,6 +309,8 @@ def add_course_to_learning_path_with_english(course, english_course, unlearned_c
     ### If not any semester can add, create new node and add course to this new node
     global learning_path
     global credit_in_semester
+    global main_semester
+    global summer_semester
     find_english_course = False
     added_course = False
     if english_course == 1:
@@ -296,7 +328,16 @@ def add_course_to_learning_path_with_english(course, english_course, unlearned_c
                     find_english_course = True
                     break
         else:
-            if element.credit + course.credit <= (int(credit_in_semester) if int(element.semester)%10 != 3 else int(credit_summer_semester)):
+            credit = credit_in_semester
+            if int(element.semester) % 10 != 3:
+                for semester in main_semester:
+                    if element.semester == int(semester["semester"]):
+                        credit = int(semester["credit"])
+            else:
+                for semester in summer_semester:
+                    if element.semester == int(semester["semester"]):
+                        credit = int(semester["credit"])
+            if element.credit + course.credit <= credit:
                 element.courses.append(course)
                 added_course = True
                 element.credit = element.credit + course.credit
@@ -322,6 +363,8 @@ def add_course_to_learning_path_with_prerequisite_and_english(course, english_co
     ### If not any semester can add, create new node and add course to this new node
     global learning_path
     global credit_in_semester
+    global main_semester
+    global summer_semester
     num_prerequisite = 1
     find_english_course = False
     added_course = False
@@ -343,7 +386,16 @@ def add_course_to_learning_path_with_prerequisite_and_english(course, english_co
                 if find_english_course and num_prerequisite == 0:
                     break    
         else:
-            if element.credit + course.credit <= (int(credit_in_semester) if int(element.semester)%10 != 3 else int(credit_summer_semester)):
+            credit = credit_in_semester
+            if int(element.semester) % 10 != 3:
+                for semester in main_semester:
+                    if element.semester == int(semester["semester"]):
+                        credit = int(semester["credit"])
+            else:
+                for semester in summer_semester:
+                    if element.semester == int(semester["semester"]):
+                        credit = int(semester["credit"])
+            if element.credit + course.credit <= credit:
                 element.courses.append(course)
                 added_course = True
                 element.credit = element.credit + course.credit
@@ -368,9 +420,20 @@ def add_course_to_learning_path(course, unlearned_course):
     ### If not any semester can add, create new node and add course to this new node
     global learning_path
     global credit_in_semester
+    global main_semester
+    global summer_semester
     added_course = False
     for element in learning_path:
-        if element.credit + course.credit <= (int(credit_in_semester) if int(element.semester)%10 != 3 else int(credit_summer_semester)):
+        credit = credit_in_semester
+        if int(element.semester) % 10 != 3:
+            for semester in main_semester:
+                if element.semester == int(semester["semester"]):
+                    credit = int(semester["credit"])
+        else:
+            for semester in summer_semester:
+                if element.semester == int(semester["semester"]):
+                    credit = int(semester["credit"])
+        if element.credit + course.credit <= credit:
             element.courses.append(course)
             added_course = True
             element.credit = element.credit + course.credit
@@ -379,6 +442,7 @@ def add_course_to_learning_path(course, unlearned_course):
                     unlearned_course.remove(course)
                     break
             break
+            
     if not added_course:
         global current_semester
         if len(learning_path) == 0:

@@ -46,7 +46,7 @@ class RecommendView(APIView):
         course_group_c = [course for course in course_list if course.is_group_c]
     
         # Get last 3 semester
-        last_3_semester = self.get_last_3_semester(int(input_data['current_semester']))
+        last_3_semester = self.get_last_3_semester(int(input_data['next_semester']))
         
         # Filter group c subjects studied in the last 3 semesters and had the highest prediction score
         course_group_c = self.resort_course_group_c(course_group_c, last_3_semester, learn_log)
@@ -67,15 +67,15 @@ class RecommendView(APIView):
          
         # Recommend Learing Path 
         learner = {
-            "english_level": input_data['english_level'],
-            "learn_summer_semester": input_data['learn_summer_semester'],
-            "credit_summer_semester": input_data['credit_summer_semester'],
-            "course_free_elective": input_data['course_free_elective'],
-            "over_learn": input_data['over_learn'],
-            "over_learn_credit": input_data['over_learn_credit'],
-            "learn_to_improve": input_data['learn_to_improve'],
+            "english_level": input_data.get("english_level", None),
+            "learn_summer_semester": input_data.get("learn_summer_semester", None),
+            "summer_semester": input_data.get("summer_semester", []), 
+            "course_free_elective": input_data.get("course_free_elective", None),
+            "over_learn": input_data.get("over_learn", None),
+            "main_semester": input_data.get("main_semester", []),
+            "learn_to_improve": input_data.get("learn_to_improve", None),
         }
-        learning_path_recommend = Recommend.recommend(learner, learner_log, course_list, course_tree, int(input_data['current_semester']))
+        learning_path_recommend = Recommend.recommend(learner, learner_log, course_list, course_tree, int(input_data['next_semester']))
     
         if (learning_path_recommend == "Môn nhóm C không đủ"):
             return JsonResponse({"error": "Môn nhóm C không đủ"}, status=400)

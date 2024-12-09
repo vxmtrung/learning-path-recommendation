@@ -54,10 +54,11 @@ class PredictView(APIView):
             
         rs = CF(data, k = 100, uuCF = 1, students=student_data, courses=course_data)
         rs.fit()
-        
+        print(rs.pred(student_ids[2411111], course_ids["CO3005"], 0))
         with open('model.pkl', 'wb') as f:
             pickle.dump(rs, f)
         return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
+    
         
 def predict_score(student_id, course_list):
     # Get all student
