@@ -5,14 +5,14 @@ def create_course_tree(course_list):
     # Initialize root node
     init_course_node = Course(
         course_id="Semester1",
+        course_code="Semester1",
         course_name="Semester 1",
         semester=None,
         count_learner=None,
         average_score=None,
         credit=None,
-        is_group_c=None,
-        is_group_d=None,
-        note=None
+        note=None,
+        description=None
     )
     root = CourseNode(init_course_node, False)
 
@@ -29,14 +29,14 @@ def create_course_tree(course_list):
             # Create new node semester
             new_course_semester = Course(
                 course_id=f'Semester{current_semester}',
+                course_code=f'Semester{current_semester}',
                 course_name=f'Semester {current_semester}',
                 semester=None,
                 count_learner=None,
                 average_score=None,
                 credit=None,
-                is_group_c=None,
-                is_group_d=None,
-                note=None
+                note=None,
+                description=None
             )
             new_node = CourseNode(new_course_semester, False)
             current_node.add_child(new_node)

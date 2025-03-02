@@ -2,7 +2,13 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy import sparse 
+from sentence_transformers import SentenceTransformer, util
+from learnlog.models import LearnLog
+from learning_outcomes.models import Learning_Outcome
 
+import pickle
+
+course_similarities = None
 class CF:
     """Collaborative Filtering"""
     def __init__(self, Y_data, k, dist_func=cosine_similarity, uuCF=1, students = None, courses = None):
@@ -50,7 +56,7 @@ class CF:
         self.normalize_Y()
         self.similarity()
         
-    def __pred(self, u, i, normalized=1):
+    def __pred(self, u, i, normalized=1, student_id = None, course_id = None):
         # print("Ybar ", self.Ybar)
         student_ids = np.where(self.Y_data[:, 1] == i)[0]  # Find the indices of students who has score for course i
         students = self.Y_data[student_ids, 0].astype(int)  # Get student
@@ -66,16 +72,51 @@ class CF:
         else:
             r = self.Ybar[i, students[a]]  # Truy cập giá trị từ ma trận dense
 
+        if np.any(r == 0) or np.any(nearest_student == 0): # if there is no score or no student has score for course i
+            score = predict_score_with_learning_outcome(student_id, course_id)
+            if score is not None:
+                return score
+            return 0
         if normalized:
             return (r * nearest_student).sum() / (np.abs(nearest_student).sum() + 1e-8)
         return (r * nearest_student).sum() / (np.abs(nearest_student).sum() + 1e-8) + self.mu[u]
 
 
 
-    def pred(self, u, i, normalized=1):
+    def pred(self, u, i, normalized=1, student_id = None, course_id = None):
         if self.uuCF:
-            score = self.__pred(u, i, normalized)
+            score = self.__pred(u, i, normalized, student_id, course_id)
             if score > 10:
                 return 10
             return score
-        return self.__pred(i, u, normalized)
+        return self.__pred(i, u, normalized, student_id, course_id)
+    
+    
+def predict_score_with_learning_outcome(student_id, course_id, top_k = 10):
+    try:
+        global course_similarities
+        if course_similarities is None:
+            with open("course_similarity.pkl", "rb") as f:
+                course_similarities = pickle.load(f)
+                
+        similar_courses = sorted(course_similarities.get(course_id, {}).items(), key=lambda x: x[1], reverse=True)[:top_k]
+        
+        learnlog = LearnLog.objects.filter(student=student_id)
+        total_weight = 0
+        weighted_score_sum = 0
+        
+        for similar_course, similarity in similar_courses:
+            learnlog_instance = learnlog.filter(course__course_code=similar_course).first()
+            if learnlog_instance:
+                weighted_score_sum += similarity * float(learnlog_instance.score)
+                total_weight += similarity
+                
+        if total_weight == 0:
+            return None
+
+        predicted_score = weighted_score_sum / total_weight
+        return predicted_score
+    
+       
+    except Exception as e:
+        return str(e)

@@ -33,9 +33,7 @@ class LearnlogImportView(APIView):
                     "course": row[1],
                     "score": None if row[2] == 'MT' else row[2],            
                     "count_learn": row[3],
-                    "credit": row[4],
-                    "semester": row[5],
-                    "learned": row[6] == '1',
+                    "semester": row[4]
                 }
                 
                 serializer = LearnLogSerializer(data=learnlog_data)

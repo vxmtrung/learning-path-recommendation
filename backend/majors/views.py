@@ -28,8 +28,8 @@ class MajorImportView(APIView):
 
             majors = []
             for row in csv_reader:
-                faculty = get_object_or_404(Faculty, faculty_id=row[2])
-                major_data = {"major_id": row[0], "major_name": row[1], "faculty": faculty.faculty_id}
+                faculty = get_object_or_404(Faculty, faculty_code=row[2])
+                major_data = {"major_code": row[0], "major_name": row[1], "faculty": faculty.faculty_code}
                 serializer = MajorSerializer(data=major_data)
                 if serializer.is_valid():
                     majors.append(Major(**serializer.validated_data))
@@ -44,7 +44,10 @@ class MajorImportView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class MajorListView(APIView):
-     def post(self, request, *args, **kwargs):
-        input_data = request.data
-        majors = Major.objects.filter(faculty = input_data["faculty"])
-        return Response(MajorSerializer(majors, many=True).data, status=status.HTTP_200_OK)
+    def post(self, request, *args, **kwargs):
+        try:
+            input_data = request.data
+            majors = Major.objects.filter(faculty = input_data["faculty"])
+            return Response(MajorSerializer(majors, many=True).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -28,4 +28,7 @@ urlpatterns = [
     path('predict/', include('predict.urls')),
     path('recommendlogs/', include('recommendlogs.urls')),
     path('syllabus/', include('syllabus.urls')),
+    path('group-course/', include('group_course.urls')),
+    path('learning-outcomes/', include('learning_outcomes.urls')),
+    path('student-needs/', include('student_needs.urls')),
 ]

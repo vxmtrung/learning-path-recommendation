@@ -1,4 +1,7 @@
 import json
+import os
+import pytz
+from datetime import datetime
 from django.http import JsonResponse
 from django.shortcuts import render
 
@@ -27,8 +30,11 @@ class RecommendView(APIView):
         
         # Get course list by major
         course_list = get_courses_by_major(input_data['major'])
+        
+        # Get predict score
         scores = predict_score(input_data['student_id'], course_list)
         
+        # Add predict score to course list
         score_dict = {item['course_id']: item['score'] for item in scores}
         for course in course_list:
             raw_score = score_dict.get(course.course_code, None)
@@ -39,62 +45,67 @@ class RecommendView(APIView):
             
         # Get learn log
         learn_log = get_learn_log()
-        learn_log = [log for log in learn_log if log.learned == True]
-        
-        
-        # Get course group c in course list
-        course_group_c = [course for course in course_list if course.is_group_c]
-    
-        # Get last 3 semester
-        last_3_semester = self.get_last_3_semester(int(input_data['next_semester']))
-        
-        # Filter group c subjects studied in the last 3 semesters and had the highest prediction score
-        course_group_c = self.resort_course_group_c(course_group_c, last_3_semester, learn_log)
-        # for course in course_group_c:
-        #     print(f"{course.course_name} ({course.course_code}) - Predict Score: {course.predict_score} - Note: {course.note}")
-    
-        ### Replace the group c subjects in the course list with the group c subjects that have been studied in the last 3 semesters
-        course_list = self.replace_sublistcourse(course_list, course_group_c)
-        # print("----------------------")
-        # for course in course_list:
-        #     print(f"{course.course_name} ({course.course_code}) - Predict Score: {course.predict_score} - Note: {course.note}")
+        learn_log = [log for log in learn_log if log.score]
     
         # Get learner log from learn log
         learner_log = [log for log in learn_log if log.student_id == input_data['student_id']]
         
         # Create Course Graph
         course_tree = CourseTree.create_course_tree(course_list)
-         
+        
         # Recommend Learing Path 
         learner = {
             "english_level": input_data.get("english_level", None),
             "learn_summer_semester": input_data.get("learn_summer_semester", None),
             "summer_semester": input_data.get("summer_semester", []), 
-            "course_free_elective": input_data.get("course_free_elective", None),
+            "group_free_elective": input_data.get("group_free_elective", None),
             "over_learn": input_data.get("over_learn", None),
             "main_semester": input_data.get("main_semester", []),
             "learn_to_improve": input_data.get("learn_to_improve", None),
         }
-        learning_path_recommend = Recommend.recommend(learner, learner_log, course_list, course_tree, int(input_data['next_semester']))
-    
-        if (learning_path_recommend == "Môn nhóm C không đủ"):
-            return JsonResponse({"error": "Môn nhóm C không đủ"}, status=400)
+        try:
+            learning_path_recommend = Recommend.recommend(learner, learner_log, course_list, course_tree, int(input_data['next_semester']))
+        except Exception as e:
+            return JsonResponse({"error": "Recommend error", "details": str(e)}, status=400)
+        
         self.print_learning_path(learning_path_recommend)
         # Convert learning path to dictionary format
         learning_path_data = {"learning_path": [element.to_dict() for element in learning_path_recommend]}
         
-        # Add log
-        recommend_logs = []
-        recommend_log = {
-            "student": input_data['student_id'],
-            "learning_path": json.dumps(learning_path_data)
-        }
-        serializer = RecommendLogSerializer(data=recommend_log)
-        if serializer.is_valid():
-            recommend_logs.append(RecommendLog(**serializer.validated_data))
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        RecommendLog.objects.bulk_create(recommend_logs)
+        ### Add log
+        try:
+            # get path to logs folder
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            logs_dir = os.path.join(parent_dir, 'logs')
+            student_folder = os.path.join(logs_dir, input_data['student_id'])
+            
+            # create logs folder if not exist
+            os.makedirs(logs_dir, exist_ok=True)
+            os.makedirs(student_folder, exist_ok=True)
+            
+            vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+            current_datetime = datetime.now(vietnam_tz).strftime("%Y%m%d_%H%M%S")
+        
+
+            file_path = os.path.join(student_folder, f"{input_data['student_id']}_{current_datetime }.txt")
+            with open(file_path, 'w', encoding='utf-8') as f:  # Đảm bảo hỗ trợ Unicode
+                json.dump(learning_path_data, f, indent=4, ensure_ascii=False)
+            
+            recommend_logs = []
+            recommend_log = {
+                "student": input_data['student_id'],
+                "log_file_name": f"{input_data['student_id']}_{current_datetime }.txt",
+                "is_active": True,
+            }
+            serializer = RecommendLogSerializer(data=recommend_log)
+            if serializer.is_valid():
+                recommend_logs.append(RecommendLog(**serializer.validated_data))
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            RecommendLog.objects.bulk_create(recommend_logs)
+        except Exception as e:
+            return JsonResponse({"error": "Save log error", "details": str(e)}, status=400)
         
         # Return JsonResponse with pretty JSON formatting
         return JsonResponse(learning_path_data, json_dumps_params={'indent': 4, 'ensure_ascii': False})
@@ -108,6 +119,13 @@ class RecommendView(APIView):
         if current_semester % 10 == 3:
             return [current_semester - 10 - 1, current_semester - 2, current_semester - 1]
 
+    def resort_course_in_group_course(self, course_list, learn_log, next_semester):
+        # sap xep lai danh sach cac mon hoc trong cac nhom mon hoc
+        # nhung mon da hoc duoc dua len tren va nhung mon chua hoc duoc dua xuong duoi
+        # cac mon duoc sap xep theo thu tu tang dan diem du doan
+        course_list_resort = []
+        course_list_not_in_last_3_semester = []
+        
     def resort_course_group_c(self, course_group_c, last_3_semester, learn_log):
         course_group_c_resort = []
         course_group_c_not_in_last_3_semester = []

@@ -14,6 +14,7 @@ from majors.models import Major
 from .models import Course
 from .serializers import CourseSerializer
 import csv
+from group_course.models import GroupCourse
 
 # Create your views here.
 
@@ -36,19 +37,21 @@ class CourseImportView(APIView):
 
             courses = []
             for row in csv_reader:
+                print(row[0])
+                print(row[8])
                 major_ids = row[2].split('|') if row[2] else []
-                 
+                group_course = get_object_or_404(GroupCourse, group_course_code=row[8]) if row[8] else None
                 course_data = {
                     "course_code": row[0],
                     "course_name": row[1],
                     "prerequisites": row[3],
                     "semester": row[4],
                     "count_learner": row[5],
-                    "average_score": None if row[6] == 'MT' else row[6],
+                    "average_score": 12 if row[6] == 'MT' else row[6],
                     "credit": row[7],
-                    "is_group_c": row[8] == '1',
-                    "is_group_d": row[9] == '1',
-                    "note": None
+                    "group_course": group_course.group_course_code if group_course else None,
+                    "note": None,
+                    "description": None
                 }
                 
                 serializer = CourseSerializer(data=course_data)
@@ -68,9 +71,15 @@ class CourseImportView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 def get_courses_by_major(major_id):
-    major = get_object_or_404(Major, major_id=major_id)
-    courses = Course.objects.filter(majors=major).order_by('semester')
-    return courses
+    try:
+        major = get_object_or_404(Major, major_id=major_id)
+        courses = Course.objects.filter(majors=major).order_by('semester', 'group_course')
+        return courses
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def get_all_course():
-    return Course.objects.all()
+    try:
+        return Course.objects.all()
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

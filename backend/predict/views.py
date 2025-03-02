@@ -12,81 +12,127 @@ import numpy as np
 
 from predict.model_predict import CF
 
+from learning_outcomes.models import Learning_Outcome
+from learnlog.models import LearnLog
+
 import pickle
+from sentence_transformers import SentenceTransformer, util
 # Create your views here.
 class PredictView(APIView):
     def get(self, request, *args, **kwargs):
-        # Get all student
-        student_data = get_all_student()
-        student_data = [student.student_id for student in student_data]
-      
-        # Get all course
-        course_data = get_all_course()
-        course_data = [course.course_code for course in course_data]
+        try:
+            # Get all student
+            student_data = get_all_student()
+            student_data = [student.student_code for student in student_data]
         
-        # Get learn log
-        learn_log = get_learn_log()
-        learn_log = [log for log in learn_log if log.learned == True]
-        
-        student_course_matrix = pd.DataFrame(np.nan, index=student_data, columns=course_data)
-        
-        # Fill in the score from the learnlog
-        for log in learn_log:
-            student_course_matrix.at[log.student_id, log.course_id] = float(log.score) if log.score else 10
+            # Get all course
+            course_data = get_all_course()
+            course_data = [course.course_code for course in course_data]
             
-        data = []
-        for student in student_data:
-            for course in course_data:
-                score = student_course_matrix.at[student, course]
-                if not np.isnan(score):
-                    data.append([int(student), course, float(score)])
-                else:
-                    data.append([int(student), course, None])
+            # Get learn log
+            learn_log = get_learn_log()
+            learn_log = [log for log in learn_log if log.score and log.score <= 10 and log.score >= 0]
+            
+            student_course_matrix = pd.DataFrame(np.nan, index=student_data, columns=course_data)
+            
+            # Fill in the score from the learnlog
+            for log in learn_log:
+                student_course_matrix.at[log.student.student_code, log.course.course_code] = float(log.score)
+                
+            data = []
+            for student in student_data:
+                for course in course_data:
+                    score = student_course_matrix.at[student, course]
+                    if np.isnan(score):
+                        data.append([int(student), course, None])
+                    else:
+                        data.append([int(student), course, float(score)])
+            
+            data = np.array(data)
         
-        data = np.array(data)
-     
-        student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
+            student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
 
-        course_ids = {v: i for i, v in enumerate(np.unique(data[:, 1]))}
-        for i in range(len(data)):
-            data[i, 0] = student_ids[data[i, 0]]
-            data[i, 1] = course_ids[data[i, 1]]
-            
-        rs = CF(data, k = 100, uuCF = 1, students=student_data, courses=course_data)
-        rs.fit()
-        print(rs.pred(student_ids[2411111], course_ids["CO3005"], 0))
-        with open('model.pkl', 'wb') as f:
-            pickle.dump(rs, f)
-        return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
+            course_ids = {v: i for i, v in enumerate(np.unique(data[:, 1]))}
+            for i in range(len(data)):
+                data[i, 0] = student_ids[data[i, 0]]
+                data[i, 1] = course_ids[data[i, 1]]
+                
+            rs = CF(data, k = 100, uuCF = 1, students=student_data, courses=course_data)
+            rs.fit()
+            print(rs.pred(student_ids[2110162], course_ids["DATH"], 0))
+            with open('model.pkl', 'wb') as f:
+                pickle.dump(rs, f)
+            return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"status": "Train failed"}, status=status.HTTP_400_BAD_REQUEST)
+  
+class PredictBaseOnLearningOutcomeView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            model = SentenceTransformer("distiluse-base-multilingual-cased")
     
+            all_courses = Learning_Outcome.objects.values_list("course__course_code", flat=True).distinct()
+            course_embeddings = {}
+            
+            for course in all_courses:
+                los = Learning_Outcome.objects.filter(course__course_code=course)
+                if los:
+                    embeddings = model.encode([lo.content_en for lo in los], batch_size=8, convert_to_numpy=True)
+                    course_embeddings[course] = embeddings
+                    
+            course_similarities = {}
+            for course_a, emb_a in course_embeddings.items():
+                course_similarities[course_a] = {}
+                for course_b, emb_b in course_embeddings.items():
+                    if course_a != course_b:
+                        similarities = util.cos_sim(emb_a, emb_b)
+                        avg_similarity = similarities.numpy().max(axis=1).mean()
+                        course_similarities[course_a][course_b] = avg_similarity
+            with open("course_similarity.pkl", "wb") as f:
+                pickle.dump(course_similarities, f)
+            # Get data from request
+            input_data = request.data
+            
+            # Get all learnlog with student_id
+            learnlog = LearnLog.objects.filter(student=input_data['student_id'])
+            
+            course_data = [log.course.course_code for log in learnlog]  
+            
+            # get learning outcome 
+            learning_come_data = Learning_Outcome.objects.filter(course__course_code__in=course_data)
+            
+            lo_data = {}
+            for lo in learning_come_data:
+                lo_data.setdefault(lo.course.course_code, []).append(lo.content_en)
+                
+            # model init
+            model = SentenceTransformer("distiluse-base-multilingual-cased")
+            
+            # Calculate embedding for all LOs of the old subject
+            course_embeddings = {}
+            for course, lo in lo_data.items():
+                course_embeddings[course] = np.array(model.encode(lo))
+                
+            with open("course_embeddings.pkl", "wb") as f:
+                pickle.dump(course_embeddings, f)
+                
+            return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"status": "Train failed", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)  
         
 def predict_score(student_id, course_list):
     # Get all student
     student_data = get_all_student()
-    student_data = [student.student_id for student in student_data]
+    student_data = [student.student_code for student in student_data]
     
     # Get all course
     course_data = get_all_course()
     course_data = [course.course_code for course in course_data]
     
-    # Get learn log
-    learn_log = get_learn_log()
-    learn_log = [log for log in learn_log if log.learned == True]
-    
-    student_course_matrix = pd.DataFrame(np.nan, index=student_data, columns=course_data)
-    
-    # Fill in the score from the learnlog
-    for log in learn_log:
-        student_course_matrix.at[log.student_id, log.course_id] = float(log.score) if log.score else 10
-        
     data = []
     for student in student_data:
         for course in course_data:
-            score = student_course_matrix.at[student, course]
-            if not np.isnan(score):
-                data.append([int(student), course, float(score)])
-            else:
-                data.append([int(student), course, None])
+            data.append([int(student), course])
     
     data = np.array(data)
     student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
@@ -94,4 +140,4 @@ def predict_score(student_id, course_list):
     
     with open("model.pkl", "rb") as f:
         loaded_model = pickle.load(f)
-    return [{"course_id": course.course_code, "score": float(loaded_model.pred(student_ids[int(student_id)], course_ids[course.course_code], 0))} for course in course_list]
+    return [{"course_id": course.course_code, "score": float(loaded_model.pred(student_ids[student_id], course_ids[course.course_code], 0, student_id, course.course_code))} for course in course_list]

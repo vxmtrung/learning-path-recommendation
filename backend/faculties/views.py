@@ -26,7 +26,7 @@ class FacultyImportView(APIView):
 
             faculties = []
             for row in csv_reader:
-                faculty_data = {"faculty_id": row[0], "faculty_name": row[1]}
+                faculty_data = {"faculty_code": row[0], "faculty_name": row[1]}
                 serializer = FacultySerializer(data=faculty_data)
                 if serializer.is_valid():
                     faculties.append(Faculty(**serializer.validated_data))

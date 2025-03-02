@@ -56,6 +56,9 @@ INSTALLED_APPS = [
     'recommendlogs',
     'syllabus',
     'corsheaders',
+    'group_course',
+    'learning_outcomes',
+    'student_needs',
 ]
 
 MIDDLEWARE = [
