@@ -17,6 +17,8 @@ scikit-learn = "*"
 scipy = "*"
 sentence-transformers = "*"
 apscheduler = "*"
+django-extensions = "*"
+faker = "*"
 
 [dev-packages]
 

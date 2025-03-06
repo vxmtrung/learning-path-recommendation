@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import ScheduledTask
 from .serializers import ScheduledTaskSerializer
-from .service import CreateScheduleTask, RemoveTask
+from .service import CreateScheduleTask, RemoveTask, learning_path_update_process
 
 # Create your views here.
 class ScheduledTaskViewSet(viewsets.ModelViewSet):
@@ -37,3 +38,9 @@ class ScheduledTaskViewSet(viewsets.ModelViewSet):
     RemoveTask(task.id)
     task.delete()
     return Response({"message": "Task deleted"}, status=status.HTTP_204_NO_CONTENT)
+  
+  @action(detail=False, methods=["get"])
+  def schedule(self, request):
+    learning_path_update_process()
+    return Response({"message": "Learning Paths Update Successfully!"})
+  
