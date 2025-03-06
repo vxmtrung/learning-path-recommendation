@@ -17,6 +17,7 @@ class GroupCourse(models.Model):
         to_field='group_course_code',
         related_name='dependent_groups'
     )
+    mandatory = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.group_course_name} ({self.group_course_code})"

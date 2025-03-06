@@ -8,12 +8,20 @@ from .serializers import StudentNeedSerializer
 # Create your views here.
 class GetStudentNeedView(APIView):
     # Define the get method
+    def get(self, request, *args, **kwargs):
+        # Get all student needs with active = true
+        student_needs = StudentNeed.objects.filter(active=True)
+        # Serialize the student needs
+        serializer = StudentNeedSerializer(student_needs, many=True)
+        
+        # Return the student needs
+        return Response(serializer.data)
     def post(self, request, *args, **kwargs):
         # Get student from request
         student = request.data.get('student_id')
         
-        # Get Last Student Needs by student
-        student_needs = StudentNeed.objects.filter(student_id=student).order_by('-created_at').first()
+        # Get Last Student Needs by student and active = true
+        student_needs = StudentNeed.objects.filter(student_id=student, active=True).order_by('-created_at').first()
         
         # Return the student needs
         return Response({
@@ -34,6 +42,12 @@ class CreateStudentNeedView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Get student needs from request
+            old_student_needs = StudentNeed.objects.filter(student_id=request.data.get('student_id'), active=True).order_by('-created_at').first()
+            # Update old student needs
+            if old_student_needs:
+                old_student_needs.active = False
+                old_student_needs.save()
+            # Prepare student needs
             student_needs = {
                 "student_id": request.data.get('student_id'),
                 "english_level": request.data.get('english_level'),

@@ -67,7 +67,7 @@ class PredictView(APIView):
             return Response({"status": "Train failed"}, status=status.HTTP_400_BAD_REQUEST)
   
 class PredictBaseOnLearningOutcomeView(APIView):
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             model = SentenceTransformer("distiluse-base-multilingual-cased")
     
@@ -90,31 +90,6 @@ class PredictBaseOnLearningOutcomeView(APIView):
                         course_similarities[course_a][course_b] = avg_similarity
             with open("course_similarity.pkl", "wb") as f:
                 pickle.dump(course_similarities, f)
-            # Get data from request
-            input_data = request.data
-            
-            # Get all learnlog with student_id
-            learnlog = LearnLog.objects.filter(student=input_data['student_id'])
-            
-            course_data = [log.course.course_code for log in learnlog]  
-            
-            # get learning outcome 
-            learning_come_data = Learning_Outcome.objects.filter(course__course_code__in=course_data)
-            
-            lo_data = {}
-            for lo in learning_come_data:
-                lo_data.setdefault(lo.course.course_code, []).append(lo.content_en)
-                
-            # model init
-            model = SentenceTransformer("distiluse-base-multilingual-cased")
-            
-            # Calculate embedding for all LOs of the old subject
-            course_embeddings = {}
-            for course, lo in lo_data.items():
-                course_embeddings[course] = np.array(model.encode(lo))
-                
-            with open("course_embeddings.pkl", "wb") as f:
-                pickle.dump(course_embeddings, f)
                 
             return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
         except Exception as e:

@@ -14,3 +14,4 @@ class StudentNeed(models.Model):
     next_semester = models.CharField(max_length=50)
     learn_to_improve = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
