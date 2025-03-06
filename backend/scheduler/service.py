@@ -1,6 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
-import requests
 import json
 
 from students.views import get_all_student
@@ -30,31 +29,31 @@ from decimal import Decimal, ROUND_HALF_UP
 scheduler = BackgroundScheduler()
 scheduler.start()
 
-def CallApi(taskId, url, method, body):
-  try:
-    if method == "POST":
-      response = requests.posts(url, json=body)
-    else:
-      response = requests.get(url)
+# def CallApi(taskId, url, method, body):
+#   try:
+#     if method == "POST":
+#       response = requests.posts(url, json=body)
+#     else:
+#       response = requests.get(url)
 
-      print(f"Task {taskId} - API Response: {response.status_code}, {response.text}")
-  except Exception as e:
-    print(f"Task {taskId} - Failed: {e}")
+#       print(f"Task {taskId} - API Response: {response.status_code}, {response.text}")
+#   except Exception as e:
+#     print(f"Task {taskId} - Failed: {e}")
 
-def CreateScheduleTask(taskId, runTime, url, method, body):
-  try:
-    job = scheduler.add_job(
-      CallApi,
-      trigger=DateTrigger(run_date=runTime),
-      args=[taskId, url, method, body],
-      id=str(taskId),
-      replace_existing=True
-    )
-    print(f"Create Schedule Task - Success: Id - {job.id}")
+# def CreateScheduleTask(taskId, runTime, url, method, body):
+#   try:
+#     job = scheduler.add_job(
+#       CallApi,
+#       trigger=DateTrigger(run_date=runTime),
+#       args=[taskId, url, method, body],
+#       id=str(taskId),
+#       replace_existing=True
+#     )
+#     print(f"Create Schedule Task - Success: Id - {job.id}")
 
-    return job.id
-  except Exception as e:
-    print(f"Create Schedule Task - Failed: {e}")
+#     return job.id
+#   except Exception as e:
+#     print(f"Create Schedule Task - Failed: {e}")
   
 def RemoveTask(taskId):
   try:
@@ -62,7 +61,23 @@ def RemoveTask(taskId):
     print(f"Removed Schedule Task {taskId} - Success")
   except Exception as e:
     print(f"Remove Schedule Task - Failed: {e}")
-    
+
+def scheduleLearningPathUpdate(t, taskId):
+  try:
+    job = scheduler.add_job(
+      learning_path_update_process,
+       trigger=DateTrigger(run_date=t),
+       args=[],
+       id=str(taskId),
+       replace_existing=True
+    )
+
+    print(f"Create Schedule Task - Success: Id - {job.id}")
+
+    return job.id
+  except Exception as e:
+    print(f"Create Schedule Task - Failed: {e}")
+
 def learning_path_update_process():
   # Step 1: Train model
   # Step 2: Train model with learning outcome
@@ -74,6 +89,8 @@ def learning_path_update_process():
     student_needs = get_active_student_need()
     for student_need in student_needs:
       generate_new_learning_path(student_need)
+
+    print("Learning path update run")
     return {"status": "Learning path update process successful"}
   except Exception as e:
     return {"status": "Learning path update process failed", "error": e}
