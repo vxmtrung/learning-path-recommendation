@@ -33,22 +33,28 @@ class GroupCourseImportView(APIView):
 
             group_courses = []
             for row in csv_reader:
+                # alternative_group_id = None
+                # if row[6]:
+                #     alternative_group_id = GroupCourse.objects.get(group_course_code=row[6])
                 group_course_data = {
                     "group_course_code": row[0],
                     "group_course_name": row[1],
                     "total_course": row[2],
-                    "minimum_course": row[3]
+                    "minimum_course": row[3],
+                    "alternative": row[4],
+                    "specifically": row[5],
+                    "alternative_group": row[6],
+                    "mandatory": row[7],
                 }
                 
                 serializer = GroupCourseSerializer(data=group_course_data)
                 if serializer.is_valid():
-                    group_courses.append(GroupCourse(**serializer.validated_data))
+                    # Insert data into database
+                    group = GroupCourse(**serializer.validated_data)
+                    group.save()
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            # Bulk create courses in database
-            GroupCourse.objects.bulk_create(group_courses)
-            
             return Response({"status": "Import successful"}, status=status.HTTP_201_CREATED)
 
         except Exception as e:

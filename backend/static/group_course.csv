@@ -1,6 +1,0 @@
-group_course_id,group_course_code,group_course_name,total_course,minimum_course,alternative,specifically
-1,group_a,Đồ án tổng hợp,3,1,f,f
-2,group_b,Thực tập đồ án môn học đa ngành,3,1,f,f
-4,group_d,Nhóm quản lý,5,1,f,t
-3,group_c,Tự chọn chuyên ngành,36,3,f,t
-5,group_free_elective,Tự chọn tự do,3,3,t,f

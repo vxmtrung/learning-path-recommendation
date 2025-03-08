@@ -1,0 +1,16 @@
+INSERT INTO "group_course_groupcourse" ("group_course_id", "group_course_code", "group_course_name", "total_course", "minimum_course", "alternative", "specifically", "alternative_group_id", "mandatory") VALUES
+(1,	'group_a',	'Đồ án tổng hợp',	3,	1,	'f',	'f',	NULL,	'f'),
+(2,	'group_b',	'Thực tập đồ án môn học đa ngành',	3,	1,	'f',	'f',	NULL,	'f'),
+(4,	'group_d',	'Tự chọn nhóm quản lý',	5,	1,	'f',	'f',	NULL,	'f'),
+(3,	'group_c',	'Tự chọn chuyên ngành',	36,	5,	'f',	't',	NULL,	'f'),
+(6,	'group_math',	'Toán',	4,	4,	'f',	't',	NULL,	't'),
+(10,	'group_introduction',	'Nhập môn',	1,	1,	'f',	't',	NULL,	't'),
+(11,	'group_people_and_environment',	'Con Người Và Môi Trường',	1,	1,	'f',	't',	NULL,	't'),
+(12,	'group_english',	'Ngoại ngữ',	4,	4,	'f',	't',	NULL,	't'),
+(13,	'group_industry_basis',	'Cơ sở ngành',	6,	6,	'f',	't',	NULL,	't'),
+(14,	'group_specialized',	'Chuyên Ngành',	4,	4,	'f',	't',	NULL,	't'),
+(15,	'group_graduate',	'Tốt Nghiệp',	3,	3,	'f',	't',	NULL,	't'),
+(8,	'group_mathematics_and_other_natural_sciences',	'Toán và KH tự nhiên khác',	2,	2,	'f',	't',	NULL,	't'),
+(7,	'group_natural_science',	'Khoa học tự nhiên',	3,	3,	'f',	't',	NULL,	't'),
+(9,	'group_economics_politics_society_law',	'Kinh tế - Chính trị - Xã hội - Luật',	6,	6,	'f',	't',	NULL,	't'),
+(5,	'group_free_elective',	'Tự chọn tự do',	3,	3,	't',	't',	'group_c',	'f');

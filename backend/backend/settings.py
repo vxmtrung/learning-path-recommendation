@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'recommend',
     'predict',
     'recommendlogs',
-    'syllabus',
     'corsheaders',
     'group_course',
     'learning_outcomes',

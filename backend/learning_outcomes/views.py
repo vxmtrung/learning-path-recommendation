@@ -29,10 +29,10 @@ class LearningOutcomesView(APIView):
             for row in csv_reader:
                 
                 learning_outcome_data = {
-                    "learning_outcome_code": row[1],
-                    "course": row[0],
-                    "content_vn": row[2],
-                    "content_en": row[3]
+                    "learning_outcome_code": row[0],
+                    "content_vn": row[1],
+                    "content_en": row[2],
+                    "course": row[3],
                 }
                 
                 serializer = LearningOutcomeSerializer(data=learning_outcome_data)
