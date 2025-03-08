@@ -17,6 +17,7 @@ from learnlog.models import LearnLog
 
 import pickle
 from sentence_transformers import SentenceTransformer, util
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # Create your views here.
 class PredictView(APIView):
     def get(self, request, *args, **kwargs):
@@ -24,11 +25,18 @@ class PredictView(APIView):
             # Get all student
             student_data = get_all_student()
             student_data = [student.student_code for student in student_data]
-        
+            # Viết file lưu student_data
+            with open("student_data.txt", "w", encoding="utf-8") as file:
+                for code in student_data:
+                    file.write(f"{code}\n")
+                    
             # Get all course
             course_data = get_all_course()
             course_data = [course.course_code for course in course_data]
-            
+            with open("course_data.txt", "w", encoding="utf-8") as file:
+                for code in course_data:
+                    file.write(f"{code}\n")
+                    
             # Get learn log
             learn_log = get_learn_log()
             learn_log = [log for log in learn_log if log.score and log.score <= 10 and log.score >= 0]
@@ -59,7 +67,6 @@ class PredictView(APIView):
                 
             rs = CF(data, k = 100, uuCF = 1, students=student_data, courses=course_data)
             rs.fit()
-            print(rs.pred(student_ids[2110162], course_ids["DATH"], 0))
             with open('model.pkl', 'wb') as f:
                 pickle.dump(rs, f)
             return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
@@ -99,7 +106,7 @@ def predict_score(student_id, course_list):
     # Get all student
     student_data = get_all_student()
     student_data = [student.student_code for student in student_data]
-    
+
     # Get all course
     course_data = get_all_course()
     course_data = [course.course_code for course in course_data]
@@ -116,3 +123,47 @@ def predict_score(student_id, course_list):
     with open("model.pkl", "rb") as f:
         loaded_model = pickle.load(f)
     return [{"course_id": course.course_code, "score": float(loaded_model.pred(student_ids[student_id], course_ids[course.course_code], 0, student_id, course.course_code))} for course in course_list]
+
+class TestingAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Lấy learn log từ model LearnLog
+            learn_log = LearnLog.objects.defer("learn_log_id", "count_learn", "semester").all()
+            print(1)
+            # Get all student từ file student_data.txt
+            with open("student_data.txt", "r", encoding="utf-8") as file:
+                student_data = file.readlines()
+                student_data = [student.strip() for student in student_data]
+
+            # Get all course từ file course_data.txt
+            with open("course_data.txt", "r", encoding="utf-8") as file:
+                course_data = file.readlines()
+                course_data = [course.strip() for course in course_data]
+            print(2)
+            true_data = []
+            predict_data = []
+            
+            data = []
+            for student in student_data:
+                for course in course_data:
+                    data.append([int(student), course])
+                    
+            data = np.array(data)
+            student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
+            course_ids = {v: i for i, v in enumerate(np.unique(data[:, 1]))}
+            print(3)
+            with open("model.pkl", "rb") as f:
+                loaded_model = pickle.load(f)
+            print(4)
+            for log in learn_log:
+                true_data.append(float(log.score))
+                predict_data.append(float(loaded_model.pred(student_ids[log.student.student_code], course_ids[log.course.course_code], 0, log.student.student_code, log.course.course_code)))
+            print(5)
+            mae = mean_absolute_error(true_data, predict_data)
+            mse = mean_squared_error(true_data, predict_data)
+            rmse = np.sqrt(mse)
+            r2 = r2_score(true_data, predict_data)
+        
+            return Response({"status": "Test successful", "Mean Absolute Error": mae, "Mean Squared Error": mse, "Root Mean Squared Error": rmse, "R2 Score": r2}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"status": "Test failed", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

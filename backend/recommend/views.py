@@ -74,6 +74,11 @@ class RecommendView(APIView):
         
         ### Add log
         try:
+            old_logs = RecommendLog.objects.filter(student_id=input_data['student_id'], is_active=True)
+            for log in old_logs:
+                log.is_active = False
+                log.save()
+                
             # get path to logs folder
             current_dir = os.path.dirname(os.path.abspath(__file__))
             parent_dir = os.path.dirname(current_dir)

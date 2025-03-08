@@ -86,8 +86,11 @@ class CF:
     def pred(self, u, i, normalized=1, student_id = None, course_id = None):
         if self.uuCF:
             score = self.__pred(u, i, normalized, student_id, course_id)
-            if score > 10:
-                return 10
+            if type(score) == np.float64:
+                if score > 10:
+                    return 10
+                else:
+                    return score
             return score
         return self.__pred(i, u, normalized, student_id, course_id)
     
