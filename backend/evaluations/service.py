@@ -83,6 +83,9 @@ def evaluateRecommendationPathForEachStudent(student_code):
     print(f"\nLearning Recommend từ file: {name}.txt")
     logs = getLearnLogByStudentCodeAndSemester(student_code, df_pred.iloc[0]["semester"])
     df_true = getYTrueDataFrame(logs)
+    df_true["semester"] = df_true["semester"].astype(str)
+    df_pred["semester"] = df_pred["semester"].astype(str)
+
     df_merge = df_true.merge(df_pred, on='semester', how='outer')
 
     df_merge['actual_course'] = df_merge['actual_course'].apply(lambda x: x if isinstance(x, set) else set())
