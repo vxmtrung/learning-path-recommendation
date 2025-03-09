@@ -30,7 +30,7 @@ class RecommendView(APIView):
         
         # Get course list by major
         course_list = get_courses_by_major(input_data['major'])
-        
+
         # Get predict score
         scores = predict_score(input_data['student_id'], course_list)
         
@@ -68,7 +68,7 @@ class RecommendView(APIView):
         except Exception as e:
             return JsonResponse({"error": "Recommend error", "details": str(e)}, status=400)
         
-        self.print_learning_path(learning_path_recommend)
+        # self.print_learning_path(learning_path_recommend)
         # Convert learning path to dictionary format
         learning_path_data = {"learning_path": [element.to_dict() for element in learning_path_recommend]}
         

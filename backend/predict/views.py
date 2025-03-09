@@ -18,25 +18,21 @@ from learnlog.models import LearnLog
 import pickle
 from sentence_transformers import SentenceTransformer, util
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+import matplotlib.pyplot as plt
+
 # Create your views here.
 class PredictView(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            # Get all student
+            # Get all student and sort by student_code
             student_data = get_all_student()
-            student_data = [student.student_code for student in student_data]
-            # Viết file lưu student_data
-            with open("student_data.txt", "w", encoding="utf-8") as file:
-                for code in student_data:
-                    file.write(f"{code}\n")
-                    
+            student_data = sorted([student.student_code for student in student_data])
+               
             # Get all course
             course_data = get_all_course()
-            course_data = [course.course_code for course in course_data]
-            with open("course_data.txt", "w", encoding="utf-8") as file:
-                for code in course_data:
-                    file.write(f"{code}\n")
-                    
+            course_data = sorted([course.course_code for course in course_data])
+             
             # Get learn log
             learn_log = get_learn_log()
             learn_log = [log for log in learn_log if log.score and log.score <= 10 and log.score >= 0]
@@ -46,7 +42,7 @@ class PredictView(APIView):
             # Fill in the score from the learnlog
             for log in learn_log:
                 student_course_matrix.at[log.student.student_code, log.course.course_code] = float(log.score)
-                
+               
             data = []
             for student in student_data:
                 for course in course_data:
@@ -65,13 +61,13 @@ class PredictView(APIView):
                 data[i, 0] = student_ids[data[i, 0]]
                 data[i, 1] = course_ids[data[i, 1]]
                 
-            rs = CF(data, k = 100, uuCF = 1, students=student_data, courses=course_data)
+            rs = CF(data, k = 1000, uuCF = 1, students=student_data, courses=course_data)
             rs.fit()
             with open('model.pkl', 'wb') as f:
                 pickle.dump(rs, f)
             return Response({"status": "Train successful"}, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({"status": "Train failed"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "Train failed", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
   
 class PredictBaseOnLearningOutcomeView(APIView):
     def get(self, request, *args, **kwargs):
@@ -105,11 +101,11 @@ class PredictBaseOnLearningOutcomeView(APIView):
 def predict_score(student_id, course_list):
     # Get all student
     student_data = get_all_student()
-    student_data = [student.student_code for student in student_data]
+    student_data = sorted([student.student_code for student in student_data])
 
     # Get all course
     course_data = get_all_course()
-    course_data = [course.course_code for course in course_data]
+    course_data = sorted([course.course_code for course in course_data])
     
     data = []
     for student in student_data:
@@ -128,20 +124,26 @@ class TestingAPIView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             # Lấy learn log từ model LearnLog
-            learn_log = LearnLog.objects.defer("learn_log_id", "count_learn", "semester").all()
-            print(1)
-            # Get all student từ file student_data.txt
-            with open("student_data.txt", "r", encoding="utf-8") as file:
-                student_data = file.readlines()
-                student_data = [student.strip() for student in student_data]
+            learn_log = LearnLog.objects.all()
+      
+            # Get all student
+            student_data = get_all_student()
+            student_data = sorted([student.student_code for student in student_data])
 
-            # Get all course từ file course_data.txt
-            with open("course_data.txt", "r", encoding="utf-8") as file:
-                course_data = file.readlines()
-                course_data = [course.strip() for course in course_data]
-            print(2)
-            true_data = []
-            predict_data = []
+            # Get all course
+            course_data = get_all_course()
+            course_data = sorted([course.course_code for course in course_data])
+  
+            true_data_2020_2021 = []
+            predict_data_2020_2021 = []
+            true_data_2021_2022 = []
+            predict_data_2021_2022 = []
+            true_data_2022_2023 = []
+            predict_data_2022_2023 = []
+            true_data_2023_2024 = []
+            predict_data_2023_2024 = []
+            true_data_2024_2025 = []
+            predict_data_2024_2025 = []
             
             data = []
             for student in student_data:
@@ -151,19 +153,107 @@ class TestingAPIView(APIView):
             data = np.array(data)
             student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
             course_ids = {v: i for i, v in enumerate(np.unique(data[:, 1]))}
-            print(3)
+   
             with open("model.pkl", "rb") as f:
                 loaded_model = pickle.load(f)
-            print(4)
+   
             for log in learn_log:
-                true_data.append(float(log.score))
-                predict_data.append(float(loaded_model.pred(student_ids[log.student.student_code], course_ids[log.course.course_code], 0, log.student.student_code, log.course.course_code)))
-            print(5)
-            mae = mean_absolute_error(true_data, predict_data)
-            mse = mean_squared_error(true_data, predict_data)
-            rmse = np.sqrt(mse)
-            r2 = r2_score(true_data, predict_data)
-        
-            return Response({"status": "Test successful", "Mean Absolute Error": mae, "Mean Squared Error": mse, "Root Mean Squared Error": rmse, "R2 Score": r2}, status=status.HTTP_201_CREATED)
+                predict_score = loaded_model.pred(student_ids[log.student.student_code], course_ids[log.course.course_code], 0, log.student.student_code, log.course.course_code)
+                if log.semester in ["201", "202"]:
+                    true_data_2020_2021.append(float(log.score))
+                    predict_data_2020_2021.append(float(predict_score))
+                elif log.semester in ["211", "212"]:
+                    true_data_2021_2022.append(float(log.score))
+                    predict_data_2021_2022.append(float(predict_score))
+                elif log.semester in ["221", "222"]:
+                    true_data_2022_2023.append(float(log.score))
+                    predict_data_2022_2023.append(float(predict_score))
+                elif log.semester in ["231", "232"]:
+                    true_data_2023_2024.append(float(log.score))
+                    predict_data_2023_2024.append(float(predict_score))
+                elif log.semester in ["241", "242"]:
+                    true_data_2024_2025.append(float(log.score))
+                    predict_data_2024_2025.append(float(predict_score))
+            
+            # 2020 - 2021
+            mae_2020_2021 = mean_absolute_error(true_data_2020_2021, predict_data_2020_2021)
+            mse_2020_2021 = mean_squared_error(true_data_2020_2021, predict_data_2020_2021)
+            rmse_2020_2021 = np.sqrt(mse_2020_2021)
+            r2_2020_2021 = r2_score(true_data_2020_2021, predict_data_2020_2021)
+            
+            # 2021 - 2022
+            mae_2021_2022 = mean_absolute_error(true_data_2021_2022, predict_data_2021_2022)
+            mse_2021_2022 = mean_squared_error(true_data_2021_2022, predict_data_2021_2022)
+            rmse_2021_2022 = np.sqrt(mse_2021_2022)
+            r2_2021_2022 = r2_score(true_data_2021_2022, predict_data_2021_2022)
+            
+            # 2022 - 2023
+            mae_2022_2023 = mean_absolute_error(true_data_2022_2023, predict_data_2022_2023)
+            mse_2022_2023 = mean_squared_error(true_data_2022_2023, predict_data_2022_2023)
+            rmse_2022_2023 = np.sqrt(mse_2022_2023)
+            r2_2022_2023 = r2_score(true_data_2022_2023, predict_data_2022_2023)
+            
+            # 2023 - 2024
+            mae_2023_2024 = mean_absolute_error(true_data_2023_2024, predict_data_2023_2024)
+            mse_2023_2024 = mean_squared_error(true_data_2023_2024, predict_data_2023_2024)
+            rmse_2023_2024 = np.sqrt(mse_2023_2024)
+            r2_2023_2024 = r2_score(true_data_2023_2024, predict_data_2023_2024)
+            
+            # 2024 - 2025
+            mae_2024_2025 = mean_absolute_error(true_data_2024_2025, predict_data_2024_2025)
+            mse_2024_2025 = mean_squared_error(true_data_2024_2025, predict_data_2024_2025)
+            rmse_2024_2025 = np.sqrt(mse_2024_2025)
+            r2_2024_2025 = r2_score(true_data_2024_2025, predict_data_2024_2025)
+            years = ["2020-2021", "2021-2022", "2022-2023", "2023-2024", "2024-2025"]
+
+            mae_values = [mae_2020_2021, mae_2021_2022, mae_2022_2023, mae_2023_2024, mae_2024_2025]
+            mse_values = [mse_2020_2021, mse_2021_2022, mse_2022_2023, mse_2023_2024, mse_2024_2025]
+            rmse_values = [rmse_2020_2021, rmse_2021_2022, rmse_2022_2023, rmse_2023_2024, rmse_2024_2025]
+
+            # Vẽ biểu đồ đường
+            plt.figure(figsize=(10, 6))
+
+            plt.plot(years, mae_values, marker='o', linestyle='-', color='b', label="MAE")
+            plt.plot(years, mse_values, marker='s', linestyle='--', color='r', label="MSE")
+            plt.plot(years, rmse_values, marker='^', linestyle='-.', color='g', label="RMSE")
+
+            # Thiết lập tiêu đề và nhãn
+            plt.title("So sánh các chỉ số lỗi theo từng năm học", fontsize=14)
+            plt.xlabel("Năm học", fontsize=12)
+            plt.ylabel("Giá trị lỗi", fontsize=12)
+            plt.legend()
+            plt.grid(True)
+
+            # Hiển thị biểu đồ
+            plt.show()
+            return Response({
+                "status": "Test successful",
+                "2020-2021": {
+                    "Mean Absolute Error": mae_2020_2021,
+                    "Mean Squared Error": mse_2020_2021,
+                    "Root Mean Squared Error": rmse_2020_2021,
+                },
+                "2021-2022": {
+                    "Mean Absolute Error": mae_2021_2022,
+                    "Mean Squared Error": mse_2021_2022,
+                    "Root Mean Squared Error": rmse_2021_2022,
+                },
+                "2022-2023": {
+                    "Mean Absolute Error": mae_2022_2023,
+                    "Mean Squared Error": mse_2022_2023,
+                    "Root Mean Squared Error": rmse_2022_2023,
+                },
+                "2023-2024": {
+                    "Mean Absolute Error": mae_2023_2024,
+                    "Mean Squared Error": mse_2023_2024,
+                    "Root Mean Squared Error": rmse_2023_2024,
+                },
+                "2024-2025": {
+                    "Mean Absolute Error": mae_2024_2025,
+                    "Mean Squared Error": mse_2024_2025,
+                    "Root Mean Squared Error": rmse_2024_2025,
+                }
+            }, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"status": "Test failed", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        

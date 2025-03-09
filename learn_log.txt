@@ -1,4 +1,4 @@
-﻿student,course,score,count_learn,semester
+student,course,score,count_learn,semester
 2410001,LA1003,9.8,1,241
 2410001,MT1003,8.5,1,241
 2410001,PH1003,9.0,1,241

@@ -1,0 +1,269 @@
+{
+    "learning_path": [
+        {
+            "semester": 242,
+            "courses": [
+                {
+                    "course_id": 17,
+                    "course_code": "LA1009",
+                    "course_name": "Anh văn 4",
+                    "credit": 2,
+                    "predict_score": 9.24,
+                    "note": null
+                },
+                {
+                    "course_id": 22,
+                    "course_code": "TCTD1",
+                    "course_name": "Tự chọn tự do 1",
+                    "credit": 3,
+                    "note": null
+                },
+                {
+                    "course_id": 20,
+                    "course_code": "CO2039",
+                    "course_name": "Lập trình nâng cao",
+                    "credit": 3,
+                    "predict_score": 7.5,
+                    "note": null
+                },
+                {
+                    "course_id": 21,
+                    "course_code": "MT2013",
+                    "course_name": "Xác suất và thống kê",
+                    "credit": 4,
+                    "predict_score": 7.9,
+                    "note": null
+                },
+                {
+                    "course_id": 19,
+                    "course_code": "CO2017",
+                    "course_name": "Hệ điều hành",
+                    "credit": 3,
+                    "predict_score": 7.8,
+                    "note": null
+                },
+                {
+                    "course_id": 28,
+                    "course_code": "DATH",
+                    "course_name": "Đồ án tổng hợp",
+                    "credit": 1,
+                    "predict_score": 8.28,
+                    "note": null
+                },
+                {
+                    "course_id": 34,
+                    "course_code": "DADN",
+                    "course_name": "Thực tập đồ án môn học đa ngành",
+                    "credit": 1,
+                    "predict_score": 8.28,
+                    "note": null
+                }
+            ],
+            "total_credit": 17
+        },
+        {
+            "semester": 243,
+            "courses": [
+                {
+                    "course_id": 18,
+                    "course_code": "SP1033",
+                    "course_name": "Kinh tế chính trị Mác - Lênin",
+                    "credit": 2,
+                    "predict_score": 7.2,
+                    "note": null
+                },
+                {
+                    "course_id": 25,
+                    "course_code": "CO2013",
+                    "course_name": "Hệ cơ sở dữ liệu",
+                    "credit": 4,
+                    "predict_score": 8.28,
+                    "note": null
+                },
+                {
+                    "course_id": 27,
+                    "course_code": "CH1003",
+                    "course_name": "Hóa đại cương",
+                    "credit": 3,
+                    "predict_score": 8.27,
+                    "note": null
+                }
+            ],
+            "total_credit": 9
+        },
+        {
+            "semester": 251,
+            "courses": [
+                {
+                    "course_id": 23,
+                    "course_code": "SP1035",
+                    "course_name": "Chủ nghĩa xã hội khoa học",
+                    "credit": 2,
+                    "predict_score": 7.55,
+                    "note": null
+                },
+                {
+                    "course_id": 26,
+                    "course_code": "CO3001",
+                    "course_name": "Công nghệ phần mềm",
+                    "credit": 3,
+                    "predict_score": 7.59,
+                    "note": null
+                },
+                {
+                    "course_id": 24,
+                    "course_code": "CO3093",
+                    "course_name": "Mạng máy tính",
+                    "credit": 3,
+                    "predict_score": 9.6,
+                    "note": null
+                },
+                {
+                    "course_id": 33,
+                    "course_code": "TCTD2",
+                    "course_name": "Tự chọn tự do 2",
+                    "credit": 3,
+                    "note": null
+                },
+                {
+                    "course_id": 32,
+                    "course_code": "CO3335",
+                    "course_name": "Thực tập ngoài trường",
+                    "credit": 2,
+                    "predict_score": 7.73,
+                    "note": null
+                },
+                {
+                    "course_id": 31,
+                    "course_code": "CO3005",
+                    "course_name": "Nguyên lý ngôn ngữ lập trình",
+                    "credit": 4,
+                    "predict_score": 8.31,
+                    "note": null
+                },
+                {
+                    "course_id": 40,
+                    "course_code": "CO3015",
+                    "course_name": "Kiểm tra phần mềm",
+                    "credit": 3,
+                    "predict_score": 7.5,
+                    "note": null
+                }
+            ],
+            "total_credit": 20
+        },
+        {
+            "semester": 252,
+            "courses": [
+                {
+                    "course_id": 29,
+                    "course_code": "SP1039",
+                    "course_name": "Lịch sử Đảng Cộng sản Việt Nam",
+                    "credit": 2,
+                    "predict_score": 7.93,
+                    "note": null
+                },
+                {
+                    "course_id": 38,
+                    "course_code": "CO3011",
+                    "course_name": "Quản lý dự án phần mềm",
+                    "credit": 3,
+                    "predict_score": 7.8,
+                    "note": null
+                },
+                {
+                    "course_id": 39,
+                    "course_code": "CO3013",
+                    "course_name": "Xây dựng chương trình dịch",
+                    "credit": 3,
+                    "predict_score": 7.67,
+                    "note": null
+                },
+                {
+                    "course_id": 41,
+                    "course_code": "CO3017",
+                    "course_name": "Kiến trúc phần mềm",
+                    "credit": 3,
+                    "predict_score": 7.9,
+                    "note": null
+                },
+                {
+                    "course_id": 59,
+                    "course_code": "CO3065",
+                    "course_name": "Công nghệ phần mềm nâng cao",
+                    "credit": 3,
+                    "predict_score": 7.65,
+                    "note": null
+                },
+                {
+                    "course_id": 78,
+                    "course_code": "IM1023",
+                    "course_name": "Tự chọn nhóm quản lý",
+                    "credit": 3,
+                    "predict_score": 7.97,
+                    "note": null
+                }
+            ],
+            "total_credit": 17
+        },
+        {
+            "semester": 261,
+            "courses": [
+                {
+                    "course_id": 30,
+                    "course_code": "CO2001",
+                    "course_name": "Kỹ năng chuyên nghiệp cho kỹ sư",
+                    "credit": 3,
+                    "predict_score": 8.14,
+                    "note": null
+                },
+                {
+                    "course_id": 35,
+                    "course_code": "SP1037",
+                    "course_name": "Tư tưởng Hồ Chí Minh",
+                    "credit": 2,
+                    "predict_score": 7.84,
+                    "note": null
+                },
+                {
+                    "course_id": 37,
+                    "course_code": "TCTD3",
+                    "course_name": "Tự chọn tự do 3",
+                    "credit": 3,
+                    "note": null
+                },
+                {
+                    "course_id": 36,
+                    "course_code": "CO4029",
+                    "course_name": "Đồ án chuyên ngành",
+                    "credit": 2,
+                    "predict_score": 7.7,
+                    "note": null
+                },
+                {
+                    "course_id": 79,
+                    "course_code": "SP1007",
+                    "course_name": "Pháp luật Việt Nam đại cương",
+                    "credit": 2,
+                    "predict_score": 9.6,
+                    "note": null
+                }
+            ],
+            "total_credit": 12
+        },
+        {
+            "semester": 262,
+            "courses": [
+                {
+                    "course_id": 80,
+                    "course_code": "CO4337",
+                    "course_name": "Đồ án tốt nghiệp",
+                    "credit": 4,
+                    "predict_score": 8.28,
+                    "note": null
+                }
+            ],
+            "total_credit": 4
+        }
+    ]
+}
