@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'group_course',
     'learning_outcomes',
     'student_needs',
-    'scheduler'
+    'scheduler',
+    'evaluations'
 ]
 
 MIDDLEWARE = [
