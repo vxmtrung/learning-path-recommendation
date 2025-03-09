@@ -72,11 +72,9 @@ class CF:
         else:
             r = self.Ybar[i, students[a]]  # Truy cập giá trị từ ma trận dense
 
-        if np.any(r == 0) or np.any(nearest_student == 0): # if there is no score or no student has score for course i
-            score = predict_score_with_learning_outcome(student_id, course_id)
-            if score is not None:
-                return score
-            return 0
+        if not check_course_has_score(course_id): # if there is no score or no student has score for course i
+            return predict_score_with_learning_outcome(student_id, course_id)
+        
         if normalized:
             return (r * nearest_student).sum() / (np.abs(nearest_student).sum() + 1e-8)
         return (r * nearest_student).sum() / (np.abs(nearest_student).sum() + 1e-8) + self.mu[u]
@@ -103,7 +101,7 @@ def predict_score_with_learning_outcome(student_id, course_id, top_k = 10):
                 course_similarities = pickle.load(f)
                 
         similar_courses = sorted(course_similarities.get(course_id, {}).items(), key=lambda x: x[1], reverse=True)[:top_k]
-        
+    
         learnlog = LearnLog.objects.filter(student=student_id)
         total_weight = 0
         weighted_score_sum = 0
@@ -113,13 +111,19 @@ def predict_score_with_learning_outcome(student_id, course_id, top_k = 10):
             if learnlog_instance:
                 weighted_score_sum += similarity * float(learnlog_instance.score)
                 total_weight += similarity
-                
-        if total_weight == 0:
-            return None
 
-        predicted_score = weighted_score_sum / total_weight
-        return predicted_score
+        predicted_score = weighted_score_sum / (total_weight + 1e-8)
+        return float(predicted_score)
     
        
     except Exception as e:
         return str(e)
+    
+def check_course_has_score(course_id):
+    try:
+        learnlog = LearnLog.objects.filter(course__course_code=course_id).first()
+        if learnlog:
+            return True
+        return False
+    except Exception as e:
+        return False

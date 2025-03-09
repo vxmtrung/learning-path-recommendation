@@ -134,9 +134,10 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
         for child_node in course_graph.children:
             travel_course_graph(learner, learner_log, unlearned_course, child_node, all_group_course)
     else:
+        
         if is_subject_learned(course_graph.course_node, learner_log, unlearned_course):
             learned_course.append(course_graph.course_node)
-         
+            
         else:
             # Kiem tra so mon con lai cua tung nhom mon
             if course_graph.course_node.group_course:
