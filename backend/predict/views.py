@@ -89,7 +89,7 @@ class PredictBaseOnLearningOutcomeView(APIView):
                 for course_b, emb_b in course_embeddings.items():
                     if course_a != course_b:
                         similarities = util.cos_sim(emb_a, emb_b)
-                        avg_similarity = similarities.numpy().max(axis=1).mean()
+                        avg_similarity = similarities.numpy().mean()
                         course_similarities[course_a][course_b] = avg_similarity
             with open("course_similarity.pkl", "wb") as f:
                 pickle.dump(course_similarities, f)

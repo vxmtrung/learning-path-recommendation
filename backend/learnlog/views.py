@@ -98,10 +98,17 @@ class ImportGradeView(APIView):
                     try:
                         with open("course_similarity.pkl", "rb") as f:
                             course_similarities = pickle.load(f)
-                        similar_courses = sorted(course_similarities.get(learnlog_data['course'].course_code, {}).items(), key=lambda x: x[1], reverse=True)[:3]
-                        for course, similarity in similar_courses:
-                            course_name = Course.objects.get(course_code=course).course_name
-                            print(f"{course_name} - {course}")
+                        similar_courses = sorted(course_similarities.get(learnlog_data['course'].course_code, {}).items(), key=lambda x: x[1], reverse=True)[:10]
+                        count_course = 0
+                       
+                        for rcm_course_code, similarity in similar_courses:
+                            rcm_course = Course.objects.get(course_code=rcm_course_code)
+                            if rcm_course.semester <= course.semester:
+                                print(f"{rcm_course.course_name} - {rcm_course_code} - {similarity}")
+                                count_course += 1
+                                if count_course == 5:
+                                    break
+
                     except Exception as e:
                         print(str(e))
                         

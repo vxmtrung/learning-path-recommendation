@@ -73,6 +73,7 @@ class CF:
             r = self.Ybar[i, students[a]]  # Truy cập giá trị từ ma trận dense
 
         if not check_course_has_score(course_id): # if there is no score or no student has score for course i
+            # return -1
             return predict_score_with_learning_outcome(student_id, course_id)
         
         if normalized:
