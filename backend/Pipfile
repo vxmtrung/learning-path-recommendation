@@ -19,6 +19,7 @@ sentence-transformers = "*"
 apscheduler = "*"
 django-extensions = "*"
 faker = "*"
+matplotlib = "*"
 
 [dev-packages]
 

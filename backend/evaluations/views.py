@@ -7,6 +7,7 @@ import pandas as pd
 # Create your views here.
 class EvaluationsAPIView(APIView):
   def get(self, request, *args, **kwargs):
+    # res = evaluateCourseChoicesForEachStudent('2110001')
     res = evaluateRecommendationPathForSystem()
 
     return Response(res, status=status.HTTP_200_OK)

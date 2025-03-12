@@ -79,18 +79,27 @@ def evaluateRecommendationPathForEachStudent(student_code):
 
   pathEval = []
 
-  for name, df_pred in df_pred_dict.items():
+  for name, df_pred_raw in df_pred_dict.items():
     print(f"\nLearning Recommend từ file: {name}.txt")
-    logs = getLearnLogByStudentCodeAndSemester(student_code, df_pred.iloc[0]["semester"])
+    logs = getLearnLogByStudentCodeAndSemester(student_code, df_pred_raw.iloc[0]["semester"])
     df_true = getYTrueDataFrame(logs)
-    df_true["semester"] = df_true["semester"].astype(str)
-    df_pred["semester"] = df_pred["semester"].astype(str)
+
+    df_true["semester"] = df_true["semester"].astype(int)
+    df_pred_raw["semester"] = df_pred_raw["semester"].astype(int)
+
+    cur_sem = df_true["semester"].max()
+    df_pred = df_pred_raw[df_pred_raw["semester"] <= cur_sem]
+    if df_true.empty and df_pred.empty:
+      pathEval.append(PathEvalForEachLog(name, 0, 0, 0))
+      continue
 
     df_merge = df_true.merge(df_pred, on='semester', how='outer')
 
     df_merge['actual_course'] = df_merge['actual_course'].apply(lambda x: x if isinstance(x, set) else set())
     df_merge['pred_course'] = df_merge['pred_course'].apply(lambda x: x if isinstance(x, set) else set())
     
+    print(df_merge)
+
     df_merge['correct'] = df_merge.apply(lambda x: len(x['actual_course'] & x['pred_course']), axis=1)
 
     df_merge['Precision'] = df_merge.apply(lambda x: x['correct'] / len(x['pred_course']) if len(x['pred_course']) > 0 else 0, axis=1)
@@ -112,7 +121,7 @@ def evaluateRecommendationPathForAllStudents():
   ids = [f.name for f in logs_path.iterdir() if f.is_dir()]
 
   for id in ids:
-     res.append(evaluateRecommendationPathForEachStudent(id)) 
+     res.append(evaluateCourseChoicesForEachStudent(id)) 
 
   return res
 
@@ -137,4 +146,47 @@ def evaluateRecommendationPathForSystem():
      "f1_score_mean": f1_sum / count
   }
 
+def evaluateCourseChoicesForEachStudent(student_code):
+  df_pred_dict = getRecommendLogs(student_code)
+
+  pathEval = []
+
+  for name, df_pred in df_pred_dict.items():
+    print(f"\nLearning Recommend từ file: {name}.txt")
+    logs = getLearnLogByStudentCodeAndSemester(student_code, df_pred.iloc[0]["semester"])
+    df_true = getYTrueDataFrame(logs)
+
+    df_true["semester"] = df_true["semester"].astype(int)
+    df_pred["semester"] = df_pred["semester"].astype(int)
+    
+    cur_sem = df_true["semester"].max()
+    df_pred_filtered = df_pred
+
+    if df_true.empty:
+       all_true_courses = set()
+    else:
+       df_true = df_true.drop(columns=['semester'])
+       all_true_courses = set(df_true.explode('actual_course')['actual_course'])
+    df_true = pd.DataFrame({'actual_course': [all_true_courses]})
+
+    if df_pred_filtered.empty:
+       all_pred_courses = set()
+    else:
+       df_pred_filtered = df_pred_filtered.drop(columns=['semester'])
+       all_pred_courses = set(df_pred_filtered.explode('pred_course')['pred_course'])
+    df_pred_filtered = pd.DataFrame({'pred_course': [all_pred_courses]})
+
+    df_merge = pd.concat([df_pred_filtered, df_true], axis=1)
+    df_merge['correct'] = df_merge.apply(lambda x: len(x['actual_course'] & x['pred_course']), axis=1)
+
+    df_merge['Precision'] = df_merge.apply(lambda x: x['correct'] / len(x['pred_course']) if len(x['pred_course']) > 0 else 0, axis=1)
+    df_merge['Recall'] = df_merge.apply(lambda x: x['correct'] / len(x['actual_course']) if len(x['actual_course']) > 0 else 0, axis=1)
+    df_merge['F1-score'] = df_merge.apply(
+    lambda x: (2 * x['Precision'] * x['Recall']) / (x['Precision'] + x['Recall']) 
+    if (x['Precision'] + x['Recall']) > 0 else 0, 
+    axis=1)
+    print(df_merge[['Precision', 'Recall', 'F1-score']])
+    pathEval.append(PathEvalForEachLog(name, df_merge['Precision'].mean(), df_merge['Recall'].mean(), df_merge['F1-score'].mean()))
+
+  return PathEvalForEachStudent(student_code, pathEval)
 
