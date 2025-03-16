@@ -72,8 +72,7 @@ class CourseImportView(APIView):
         
 def get_courses_by_major(majors_list):
     try:
-        major_ids = majors_list.split(',')
-        majors = Major.objects.filter(major_id__in=major_ids)
+        majors = Major.objects.filter(major_id__in=majors_list)
         courses = Course.objects.filter(majors__in=majors).order_by('semester', 'group_course').distinct().prefetch_related('majors')
         return courses
     except Exception as e:

@@ -56,7 +56,6 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     
     # Get majors
     majors = learner["major"]
-    majors = majors.split(",")
     for major in majors:
         course_major.append([major, 5])
     
@@ -160,11 +159,10 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
                 
         else:
             if course_graph.course_node.group_course.group_course_code == "group_c":
-                print(course_graph.course_node.course_name)
                 major_of_course = course_graph.course_node.majors.all()
                 for major in major_of_course:
                     for major_course in course_major:
-                        if major_course[0] == major.major_code:
+                        if str(major_course[0]) == str(major.major_code):
                             if major_course[1] <= 0:
                                 return
                             major_course[1] = major_course[1] - 1
