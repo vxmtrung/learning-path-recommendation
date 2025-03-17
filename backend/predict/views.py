@@ -89,7 +89,7 @@ class PredictBaseOnLearningOutcomeView(APIView):
                 for course_b, emb_b in course_embeddings.items():
                     if course_a != course_b:
                         similarities = util.cos_sim(emb_a, emb_b)
-                        avg_similarity = similarities.numpy().max(axis=1).mean()
+                        avg_similarity = similarities.numpy().mean()
                         course_similarities[course_a][course_b] = avg_similarity
             with open("course_similarity.pkl", "wb") as f:
                 pickle.dump(course_similarities, f)
@@ -210,22 +210,22 @@ class TestingAPIView(APIView):
             mse_values = [mse_2020_2021, mse_2021_2022, mse_2022_2023, mse_2023_2024, mse_2024_2025]
             rmse_values = [rmse_2020_2021, rmse_2021_2022, rmse_2022_2023, rmse_2023_2024, rmse_2024_2025]
 
-            # Vẽ biểu đồ đường
-            plt.figure(figsize=(10, 6))
+            # # Vẽ biểu đồ đường
+            # plt.figure(figsize=(10, 6))
 
-            plt.plot(years, mae_values, marker='o', linestyle='-', color='b', label="MAE")
-            plt.plot(years, mse_values, marker='s', linestyle='--', color='r', label="MSE")
-            plt.plot(years, rmse_values, marker='^', linestyle='-.', color='g', label="RMSE")
+            # plt.plot(years, mae_values, marker='o', linestyle='-', color='b', label="MAE")
+            # plt.plot(years, mse_values, marker='s', linestyle='--', color='r', label="MSE")
+            # plt.plot(years, rmse_values, marker='^', linestyle='-.', color='g', label="RMSE")
 
-            # Thiết lập tiêu đề và nhãn
-            plt.title("So sánh các chỉ số lỗi theo từng năm học", fontsize=14)
-            plt.xlabel("Năm học", fontsize=12)
-            plt.ylabel("Giá trị lỗi", fontsize=12)
-            plt.legend()
-            plt.grid(True)
+            # # Thiết lập tiêu đề và nhãn
+            # plt.title("So sánh các chỉ số lỗi theo từng năm học", fontsize=14)
+            # plt.xlabel("Năm học", fontsize=12)
+            # plt.ylabel("Giá trị lỗi", fontsize=12)
+            # plt.legend()
+            # plt.grid(True)
 
             # Hiển thị biểu đồ
-            plt.show()
+            # plt.show()
             return Response({
                 "status": "Test successful",
                 "2020-2021": {
@@ -252,6 +252,125 @@ class TestingAPIView(APIView):
                     "Mean Absolute Error": mae_2024_2025,
                     "Mean Squared Error": mse_2024_2025,
                     "Root Mean Squared Error": rmse_2024_2025,
+                }
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"status": "Test failed", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def post(self, request, *args, **kwargs):
+        try:
+            # Lấy learn log từ model LearnLog
+            learn_log = LearnLog.objects.filter(student__student_code=request.data["student_id"])
+      
+            # Get all student
+            student_data = get_all_student()
+            student_data = sorted([student.student_code for student in student_data])
+
+            # Get all course
+            course_data = get_all_course()
+            course_data = sorted([course.course_code for course in course_data])
+  
+            true_data_2020_2021 = []
+            predict_data_2020_2021 = []
+            true_data_2021_2022 = []
+            predict_data_2021_2022 = []
+            true_data_2022_2023 = []
+            predict_data_2022_2023 = []
+            true_data_2023_2024 = []
+            predict_data_2023_2024 = []
+            true_data_2024_2025 = []
+            predict_data_2024_2025 = []
+            
+            data = []
+            for student in student_data:
+                for course in course_data:
+                    data.append([int(student), course])
+                    
+            data = np.array(data)
+            student_ids = {v: i for i, v in enumerate(np.unique(data[:, 0]))}
+            course_ids = {v: i for i, v in enumerate(np.unique(data[:, 1]))}
+   
+            with open("model.pkl", "rb") as f:
+                loaded_model = pickle.load(f)
+   
+            for log in learn_log:
+                predict_score = loaded_model.pred(student_ids[log.student.student_code], course_ids[log.course.course_code], 0, log.student.student_code, log.course.course_code)
+                if log.semester in ["201", "202"]:
+                    true_data_2020_2021.append(float(log.score))
+                    predict_data_2020_2021.append(float(predict_score))
+                elif log.semester in ["211", "212"]:
+                    true_data_2021_2022.append(float(log.score))
+                    predict_data_2021_2022.append(float(predict_score))
+                elif log.semester in ["221", "222"]:
+                    true_data_2022_2023.append(float(log.score))
+                    predict_data_2022_2023.append(float(predict_score))
+                elif log.semester in ["231", "232"]:
+                    true_data_2023_2024.append(float(log.score))
+                    predict_data_2023_2024.append(float(predict_score))
+                elif log.semester in ["241", "242"]:
+                    true_data_2024_2025.append(float(log.score))
+                    predict_data_2024_2025.append(float(predict_score))
+            
+            # 2020 - 2021
+            if len(true_data_2020_2021) != 0 and len(predict_data_2020_2021) != 0:
+                mae_2020_2021 = mean_absolute_error(true_data_2020_2021, predict_data_2020_2021)
+                mse_2020_2021 = mean_squared_error(true_data_2020_2021, predict_data_2020_2021)
+                rmse_2020_2021 = np.sqrt(mse_2020_2021)
+                
+            # 2021 - 2022
+            if len(true_data_2021_2022) != 0 and len(predict_data_2021_2022) != 0:
+                mae_2021_2022 = mean_absolute_error(true_data_2021_2022, predict_data_2021_2022)
+                mse_2021_2022 = mean_squared_error(true_data_2021_2022, predict_data_2021_2022)
+                rmse_2021_2022 = np.sqrt(mse_2021_2022)
+            
+            # 2022 - 2023
+            if len(true_data_2022_2023) != 0 and len(predict_data_2022_2023) != 0:
+                mae_2022_2023 = mean_absolute_error(true_data_2022_2023, predict_data_2022_2023)
+                mse_2022_2023 = mean_squared_error(true_data_2022_2023, predict_data_2022_2023)
+                rmse_2022_2023 = np.sqrt(mse_2022_2023)
+          
+            # 2023 - 2024
+            if len(true_data_2023_2024) != 0 and len(predict_data_2023_2024) != 0:
+                mae_2023_2024 = mean_absolute_error(true_data_2023_2024, predict_data_2023_2024)
+                mse_2023_2024 = mean_squared_error(true_data_2023_2024, predict_data_2023_2024)
+                rmse_2023_2024 = np.sqrt(mse_2023_2024)
+           
+            # 2024 - 2025
+            if len(true_data_2024_2025) != 0 and len(predict_data_2024_2025) != 0:
+                mae_2024_2025 = mean_absolute_error(true_data_2024_2025, predict_data_2024_2025)
+                mse_2024_2025 = mean_squared_error(true_data_2024_2025, predict_data_2024_2025)
+                rmse_2024_2025 = np.sqrt(mse_2024_2025)
+           
+            return Response({
+                "status": "Test successful",
+                "2020-2021": {
+                    "Mean Absolute Error": mae_2020_2021 if len(true_data_2020_2021) != 0 and len(predict_data_2020_2021) != 0 else None,
+                    "Mean Squared Error": mse_2020_2021 if len(true_data_2020_2021) != 0 and len(predict_data_2020_2021) != 0 else None,
+                    "Root Mean Squared Error": rmse_2020_2021 if len(true_data_2020_2021) != 0 and len(predict_data_2020_2021) != 0 else None,
+                },
+                    
+                "2021-2022": {
+                    "Mean Absolute Error": mae_2021_2022 if len(true_data_2021_2022) != 0 and len(predict_data_2021_2022) != 0 else None,
+                    "Mean Squared Error": mse_2021_2022 if len(true_data_2021_2022) != 0 and len(predict_data_2021_2022) != 0 else None,
+                    "Root Mean Squared Error": rmse_2021_2022 if len(true_data_2021_2022) != 0 and len(predict_data_2021_2022) != 0 else None,
+                },
+                
+                "2022-2023": {
+                    "Mean Absolute Error": mae_2022_2023 if len(true_data_2022_2023) != 0 and len(predict_data_2022_2023) != 0 else None,
+                    "Mean Squared Error": mse_2022_2023 if len(true_data_2022_2023) != 0 and len(predict_data_2022_2023) != 0 else None,
+                    "Root Mean Squared Error": rmse_2022_2023 if len(true_data_2022_2023) != 0 and len(predict_data_2022_2023) != 0 else None,
+                },
+                
+                "2023-2024": {
+                    "Mean Absolute Error": mae_2023_2024 if len(true_data_2023_2024) != 0 and len(predict_data_2023_2024) != 0 else None,
+                    "Mean Squared Error": mse_2023_2024 if len(true_data_2023_2024) != 0 and len(predict_data_2023_2024) != 0 else None,
+                    "Root Mean Squared Error": rmse_2023_2024 if len(true_data_2023_2024) != 0 and len(predict_data_2023_2024) != 0 else None,
+                },
+                
+                "2024-2025": {
+                    "Mean Absolute Error": mae_2024_2025 if len(true_data_2024_2025) != 0 and len(predict_data_2024_2025) != 0 else None,
+                    "Mean Squared Error": mse_2024_2025 if len(true_data_2024_2025) != 0 and len(predict_data_2024_2025) != 0 else None,
+                    "Root Mean Squared Error": rmse_2024_2025 if len(true_data_2024_2025) != 0 and len(predict_data_2024_2025) != 0 else None,
                 }
             }, status=status.HTTP_201_CREATED)
         except Exception as e:

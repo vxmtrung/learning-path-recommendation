@@ -6,7 +6,6 @@ def generate_student_data():
     fake = faker.Faker("vi_VN")
     init_student_code = 2010001
     init_student_gpa = 2.1
-    data = []
     with open("student_data.txt", "w", encoding="utf-8") as file:
         file.write("student_code,student_name,student_email,english_level,faculty,GPA\n")
     for i in range(5):
@@ -15,7 +14,15 @@ def generate_student_data():
         for j in range(20):
             student_name = fake.name()
             student_email = "mail." + str(student_code) + "@hcmut.edu.vn"
-            english_level = random.choice([1, 2, 3, 4])
+            english_level = None
+            if str(student_code).startswith("241"):
+                english_level = 1
+            elif str(student_code).startswith("231"):
+                english_level = 2
+            elif str(student_code).startswith("221"):
+                english_level = 3
+            else:
+                english_level = 4
             faculty = "MT"
             init_student_gpa += 0.1
             init_student_gpa = round(init_student_gpa, 1)
@@ -629,6 +636,38 @@ def generate_learn_log():
     generate_learn_log_student_4()
     generate_learn_log_student_5()
     
-# generate_student_data()
-generate_learn_log()
-
+def geneate_learn_log_to_test():
+    with open("learn_log.txt", "w", encoding="utf-8") as file:
+        file.write("student,course,score,count_learn,semester\n")
+    # K24
+    courses = ["LA1003", "MT1003", "PH1003", "CO1005", "CO1023",
+               "LA1005", "MT1005", "MT1007", "CO1007", "CO1027", "PH1007",
+               "LA1007", "SP1031", "CO2007", "CO2011", "CO2003",
+               "LA1009", "SP1033", "CO2017", "CO2039", "MT2013", "TCTD1", 
+               "SP1035", "CO3093", "CO2013", "CO3001", "CH1003", "DATH",
+               "SP1039", "CO2001", "CO3005", "CO3335", "TCTD2", "DADN", 
+               "SP1037", "CO4029", "TCTD3",
+            ]
+    group_c_course = ["CO3043", "CO3045", "CO3049", "CO3051", "CO3057", "CO3059", "CO3089", "CO3117", "CO3029", "CO3035", "CO3037", "CO3041", "CO3043", "CO3045", "CO3049", "CO3051", "CO3061", "CO3085", "CO3089", "CO3117", "CO4025",
+                      "CO3047", "CO3049", "CO3051", "CO3069", "CO3083", "CO3089", "CO3011", "CO3013", "CO3015", "CO3017", "CO3065", "CO3089", "CO3115", "CO3021", "CO3023", "CO3027", "CO3029", "CO3033", "CO3115", "CO4031", "CO4033", "CO4035", "CO4037", "CO4039"]
+    group_d_course = ["IM1013", "IM3001", "IM1027", "IM1023", "IM1025"]
+    for i in range(4):
+        for j in range(20):
+            for course in courses:
+                with open("learn_log.txt", "a", encoding="utf-8") as file:
+                    file.write(f"{2110001 + i*100000 + j},{course},{round(random.uniform(5, 9), 1)},{1},{251}\n")
+            group_c_course_random = random.sample(group_c_course, 5)
+            for course in group_c_course_random:
+                with open("learn_log.txt", "a", encoding="utf-8") as file:
+                    file.write(f"{2110001 + i*100000 + j},{course},{round(random.uniform(5, 9), 1)},{1},{251}\n")
+            group_d_course_random = random.sample(group_d_course, 1)
+            for course in group_d_course_random:
+                with open("learn_log.txt", "a", encoding="utf-8") as file:
+                    file.write(f"{2110001 + i*100000 + j},{course},{round(random.uniform(5, 9), 1)},{1},{251}\n")
+            
+        
+        
+    
+generate_student_data()
+# generate_learn_log()
+# geneate_learn_log_to_test()

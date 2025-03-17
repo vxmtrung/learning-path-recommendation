@@ -8,6 +8,7 @@ min_credit_in_semester = 11
 learned_course = []
 main_semester = []
 summer_semester = []
+course_major = []
 
 class LearningPathElement:
     def __init__(self, semester):
@@ -42,6 +43,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     global main_semester
     global summer_semester
     global min_credit_in_semester
+    global course_major
     
     learning_path = []
     current_semester = 0
@@ -50,9 +52,15 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     main_semester = []
     summer_semester = []
     min_credit_in_semester = 11
+    course_major = []
+    
+    # Get majors
+    majors = learner["major"]
+    for major in majors:
+        course_major.append([major, 5])
     
     # Caculate number of course each group
-    all_group_course = handle_group_course(learner, learner_log, unlearned_course)
+    all_group_course = handle_group_course(learner, learner_log, unlearned_course, len(course_major))
    
     if learner["over_learn"] == "1":
         main_semester = learner["main_semester"]
@@ -80,8 +88,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
                             break
     return learning_path
     
-def handle_group_course(learner, learner_log, course_list):
-    # group_course = GroupCourse.objects.all().order_by('-alternative_group')
+def handle_group_course(learner, learner_log, course_list, num_of_major):
     group_course = GroupCourse.objects.all()
     updated_groups = {group.group_course_code: group for group in group_course}
     for log in learner_log:
@@ -98,7 +105,11 @@ def handle_group_course(learner, learner_log, course_list):
             if alt_group:
                 alt_group.minimum_course += cur_group.minimum_course - int(learner[group.group_course_code])
                 cur_group.minimum_course = int(learner[group.group_course_code])
-            
+        
+        if group.group_course_code == "group_c":
+            modified_group = updated_groups.get(group.group_course_code)
+            modified_group.minimum_course += 5 * (num_of_major-1)
+        
     return group_course
             
 def add_english_course_to_learning_path(learner_log, unlearned_course):
@@ -129,16 +140,32 @@ def add_english_course_to_learning_path(learner_log, unlearned_course):
 ### Step 3: Check prerequisite
 def travel_course_graph(learner, learner_log, unlearned_course, course_graph, all_group_course):
     global learned_course
+    global course_major
     
     if course_graph.is_course == False:
         for child_node in course_graph.children:
             travel_course_graph(learner, learner_log, unlearned_course, child_node, all_group_course)
     else:
-        
+        # print(course_graph.course_node.course_name)
         if is_subject_learned(course_graph.course_node, learner_log, unlearned_course):
             learned_course.append(course_graph.course_node)
-            
+        
+            if course_graph.course_node.group_course.group_course_code == "group_c":
+                major_of_course = course_graph.course_node.majors.all()
+                for major in major_of_course:
+                    for major_course in course_major:
+                        if major_course[0] == major.major_code:
+                            major_course[1] = major_course[1] - 1
+                
         else:
+            if course_graph.course_node.group_course.group_course_code == "group_c":
+                major_of_course = course_graph.course_node.majors.all()
+                for major in major_of_course:
+                    for major_course in course_major:
+                        if str(major_course[0]) == str(major.major_code):
+                            if major_course[1] <= 0:
+                                return
+                            major_course[1] = major_course[1] - 1
             # Kiem tra so mon con lai cua tung nhom mon
             if course_graph.course_node.group_course:
                 for group in all_group_course:
@@ -155,6 +182,7 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
                 # Kiem tra cac mon hoc chung dai dien cho nhom
                 if not course_graph.course_node.group_course.specifically:
                     course_graph.course_node.course_name = course_graph.course_node.group_course.group_course_name
+            
             
             check_prerequisite_and_add_learning_path(int(learner["english_level"]), course_graph.course_node, learner_log, unlearned_course)
             

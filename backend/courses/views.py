@@ -70,10 +70,10 @@ class CourseImportView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-def get_courses_by_major(major_id):
+def get_courses_by_major(majors_list):
     try:
-        major = get_object_or_404(Major, major_id=major_id)
-        courses = Course.objects.filter(majors=major).order_by('semester', 'group_course')
+        majors = Major.objects.filter(major_id__in=majors_list)
+        courses = Course.objects.filter(majors__in=majors).order_by('semester', 'group_course').distinct().prefetch_related('majors')
         return courses
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
