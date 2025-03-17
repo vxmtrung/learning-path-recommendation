@@ -41,7 +41,7 @@ def getRecommendLogs(studentCode):
 
   return df_dict
 
-def evaluateRecommendationPathForAllStudents():
+def gen():
   res = []
 
   logs_path = Path("logs")
@@ -49,7 +49,7 @@ def evaluateRecommendationPathForAllStudents():
   print(ids)
   for id in ids:
     if id[:3] == '211':
-      courses = sem8 + random.sample(op, 3)
+      courses = sem8 + random.sample(op, 2)
     elif id[:3] == '221':
       courses = sem6 + sem7 + sem8 + random.sample(op, 5)
     elif id[:3] == '231':
@@ -61,4 +61,5 @@ def evaluateRecommendationPathForAllStudents():
         file.write(f"{id},{course},{7},{1},{242}\n") 
   return 1
 
-check
+
+gen()

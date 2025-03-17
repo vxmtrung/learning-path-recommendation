@@ -1,5 +1,7 @@
 /backend/my_venv
 /backend/**/__pycache__
 .env
-docker-compose.yml
 /backend/model.pkl
+/backend/logs/*
+docker-compose.yml
+/backend/course_similarity.pkl
