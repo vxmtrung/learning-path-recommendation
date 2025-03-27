@@ -1,5 +1,6 @@
 from courses.models import Course
 from group_course.models import GroupCourse
+from rules.service import map_group_rule
 learning_path = []
 current_semester = 0
 learn_summer_semester = False
@@ -89,7 +90,7 @@ def recommend(learner, learner_log, unlearned_course, course_graph, semester):
     return learning_path
     
 def handle_group_course(learner, learner_log, course_list, num_of_major):
-    group_course = GroupCourse.objects.all()
+    group_course = map_group_rule()
     updated_groups = {group.group_course_code: group for group in group_course}
     for log in learner_log:
         if log.course.group_course and log.course in course_list:
@@ -176,14 +177,9 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
                             group.minimum_course = group.minimum_course - 1
                             
                         # Kiem tra cac mon hoc chung dai dien cho nhom
-                        if not course_graph.course_node.group_course.specifically:
+                        if not group.specifically:
                             course_graph.course_node.course_name = course_graph.course_node.group_course.group_course_name
                     
-                # Kiem tra cac mon hoc chung dai dien cho nhom
-                if not course_graph.course_node.group_course.specifically:
-                    course_graph.course_node.course_name = course_graph.course_node.group_course.group_course_name
-            
-            
             check_prerequisite_and_add_learning_path(int(learner["english_level"]), course_graph.course_node, learner_log, unlearned_course)
             
                 

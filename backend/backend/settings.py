@@ -61,7 +61,9 @@ INSTALLED_APPS = [
     'student_needs',
     'scheduler',
     'evaluations',
-    'semesters'
+    'semesters',
+    'rules',
+    'group_rule',
 ]
 
 MIDDLEWARE = [

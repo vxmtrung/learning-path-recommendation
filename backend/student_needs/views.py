@@ -11,6 +11,9 @@ class GetStudentNeedView(APIView):
     def get(self, request, *args, **kwargs):
         # Get all student needs with active = true
         student_needs = StudentNeed.objects.filter(active=True)
+        # Neu khong co student needs thi tra ve thong bao
+        if not student_needs:
+            return Response({"error": "No student needs found"}, status=404)
         # Serialize the student needs
         serializer = StudentNeedSerializer(student_needs, many=True)
         
@@ -23,6 +26,9 @@ class GetStudentNeedView(APIView):
         # Get Last Student Needs by student and active = true
         student_needs = StudentNeed.objects.filter(student_id=student, active=True).order_by('-created_at').first()
         
+        # Neu khong co student needs thi tra ve thong bao
+        if not student_needs:
+            return Response({"error": "No student needs found"}, status=404)
         # Return the student needs
         return Response({
             "student_id": student_needs.student_id,
