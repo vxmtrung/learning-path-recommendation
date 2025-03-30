@@ -17,6 +17,8 @@ from predict.model_predict import CF
 
 from recommend.course_tree import create_course_tree
 from recommend.recommend import recommend
+from semesters.models import Semester
+from semesters.serializers import SemesterSerializer
 import pandas as pd
 import numpy as np
 import pickle
@@ -83,13 +85,14 @@ def learning_path_update_process():
   # Step 2: Train model with learning outcome
   # Step 3: Get active student needs
   # Step 4: Loop through the student needs and get new learning path
+  # Step 5: Next semester
   try:
     train_model()
     train_model_with_learning_outcome()
     student_needs = get_active_student_need()
     for student_need in student_needs:
       generate_new_learning_path(student_need)
-
+    switch_next_semester()
     print("Learning path update run")
     return {"status": "Learning path update process successful"}
   except Exception as e:
@@ -257,3 +260,29 @@ def generate_new_learning_path(student_need):
       return {"status": "Generate new learning path failed", "error": e}
   except Exception as e:
     return {"status": "Generate new learning path failed", "error": e}
+  
+def switch_next_semester():
+  try:
+    current_semester = Semester.objects.get(is_active=True)
+  
+    if current_semester.semester_name.endswith("1"):    
+      next_semester_name = int(current_semester.semester_name) + 1
+    elif current_semester.semester_name.endswith("2"):
+      next_semester_name = int(current_semester.semester_name) + 1
+    else:
+      next_semester_name = int(current_semester.semester_name) + 8
+      
+    semester = {
+      "semester_name": str(next_semester_name),
+    }
+    serializer = SemesterSerializer(data=semester)
+    if not serializer.is_valid():
+      return {"status": "Switch next semester failed", "error": serializer.errors}
+    current_semester.is_active = False
+    current_semester.save()
+    serializer.save()
+    return {"status": "Switch next semester successful"}
+  except Exception as e:
+    return {"error": "Can not create semester", "details": str(e)}
+  
+  
