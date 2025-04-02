@@ -1,7 +1,7 @@
 from django.urls import path, include
-from .views import EvaluationsAPIView
+from .views import EvaluationsAPIView, AllEvaluationsAPIView, StudentEvaluationAPIView
 
 urlpatterns = [
-  path("evaluations/", EvaluationsAPIView.as_view(), name="overall-evaluations"),
-  path("evaluations/<student_id>/", EvaluationsAPIView.as_view(), name="student-evaluations")
+  path("all", AllEvaluationsAPIView.as_view(), name="overall-evaluations"),
+  path("<student_id>/", StudentEvaluationAPIView.as_view(), name="student-evaluations")
 ]

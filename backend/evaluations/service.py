@@ -176,7 +176,10 @@ def evalAll():
     tmp = getPathEvaluationForStudent(id)
     if isinstance(tmp, str):
        continue
-    res.append(getPathEvaluationForStudent(id))
+    res.append(tmp)
+
+  if not res:
+    return "No data to evaluate"
 
   res1 = pd.concat(res).groupby("semester").mean().reset_index()
 
