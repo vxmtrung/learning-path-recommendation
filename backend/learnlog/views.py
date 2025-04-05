@@ -11,6 +11,8 @@ from students.models import Student
 from courses.models import Course
 # Create your views here.
 import pickle
+import os
+import requests
 class LearnlogImportView(APIView):
     def post(self, request, *args, **kwargs):
         # get file from request
@@ -91,27 +93,41 @@ class ImportGradeView(APIView):
                 }
 
                 learnlogs.append(LearnLog(**learnlog_data))
-
+                   
                 if float(learnlog_data["score"]) < 5:
-                    print(f"Student {learnlog_data['student'].student_name} failed {learnlog_data['course'].course_name} with score {learnlog_data['score']}")
-                    print(f"Student {learnlog_data['student'].student_name} need to learn this below courses:")
+                    base_url = os.getenv("BASE_URL")
+                    api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_schedule_done"
+                    
+                    recommend_course = []
                     try:
                         with open("course_similarity.pkl", "rb") as f:
                             course_similarities = pickle.load(f)
-                        similar_courses = sorted(course_similarities.get(learnlog_data['course'].course_code, {}).items(), key=lambda x: x[1], reverse=True)[:10]
-                        count_course = 0
-                       
-                        for rcm_course_code, similarity in similar_courses:
-                            rcm_course = Course.objects.get(course_code=rcm_course_code)
-                            if rcm_course.semester <= course.semester:
-                                print(f"{rcm_course.course_name} - {rcm_course_code} - {similarity}")
-                                count_course += 1
-                                if count_course == 5:
-                                    break
+                            similar_courses = sorted(course_similarities.get(learnlog_data['course'].course_code, {}).items(), key=lambda x: x[1], reverse=True)
+                            count_course = 0
+                        
+                            for rcm_course_code, similarity in similar_courses:
+                                rcm_course = Course.objects.get(course_code=rcm_course_code)
+                                if rcm_course.semester <= course.semester:
+                                    recommend_course.append(rcm_course_code)
+                                    count_course += 1
+                                    if count_course == 5:
+                                        break
 
                     except Exception as e:
                         print(str(e))
-                        
+                    # Prepate data
+                    data = {
+                        "studentid": learnlog_data["student"].student_code,
+                        "failedCourses": [
+                            learnlog_data["course"].course_code
+                        ],
+                        "recommendedCourses": recommend_course,
+                    }
+                    
+                    # Call API notify
+                    requests.post(api_endpoint, json=data)
+                    
+                    
                 # Khi danh sách đạt batch_size, insert vào DB
                 # if len(learnlogs) >= batch_size:
                 #     LearnLog.objects.bulk_create(learnlogs)

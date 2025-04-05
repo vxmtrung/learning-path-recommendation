@@ -1,6 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 import json
+import requests
 
 from students.views import get_all_student
 from courses.views import get_all_course
@@ -94,6 +95,7 @@ def learning_path_update_process():
       generate_new_learning_path(student_need)
     switch_next_semester()
     print("Learning path update run")
+    call_notify_schedule_done()
     return {"status": "Learning path update process successful"}
   except Exception as e:
     return {"status": "Learning path update process failed", "error": e}
@@ -285,4 +287,20 @@ def switch_next_semester():
   except Exception as e:
     return {"error": "Can not create semester", "details": str(e)}
   
+def call_notify_schedule_done():
+  try:
+    base_url = os.getenv("BASE_URL")
+    api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_schedule_done"
+    
+    # Prepate data
+    data = {
+        "timestamp": datetime.now().timestamp(),
+    }
+    
+    # Send request GET
+    requests.post(api_endpoint, json=data)
+    return({"status": "Notify schedule done successful"})
+  except Exception as e:
+    return {"status": "Notify schedule done failed", "error": str(e)}
+        
   
