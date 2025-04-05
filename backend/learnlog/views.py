@@ -95,8 +95,8 @@ class ImportGradeView(APIView):
                 learnlogs.append(LearnLog(**learnlog_data))
                    
                 if float(learnlog_data["score"]) < 5:
-                    base_url = os.getenv("BASE_URL")
-                    api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_schedule_done"
+                    base_url = os.getenv("baseURL")
+                    api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_failed_courses"
                     
                     recommend_course = []
                     try:
@@ -115,6 +115,13 @@ class ImportGradeView(APIView):
 
                     except Exception as e:
                         print(str(e))
+                        
+                    # Prepare headers
+                    header = {
+                        "Content-Type": "application/json",
+                        "Authorization": os.getenv("MOODLE_TOKEN"),\
+                        "Accept": "application/json",
+                    }
                     # Prepate data
                     data = {
                         "studentid": learnlog_data["student"].student_code,
@@ -125,7 +132,7 @@ class ImportGradeView(APIView):
                     }
                     
                     # Call API notify
-                    requests.post(api_endpoint, json=data)
+                    requests.post(api_endpoint, json=data, headers=header)
                     
                     
                 # Khi danh sách đạt batch_size, insert vào DB

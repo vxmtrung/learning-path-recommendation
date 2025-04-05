@@ -289,16 +289,22 @@ def switch_next_semester():
   
 def call_notify_schedule_done():
   try:
-    base_url = os.getenv("BASE_URL")
+    base_url = os.getenv("baseURL")
     api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_schedule_done"
     
+    # Prepare headers
+    header = {
+        "Content-Type": "application/json",
+        "Authorization": os.getenv("MOODLE_TOKEN"),\
+        "Accept": "application/json",
+    }
     # Prepate data
     data = {
         "timestamp": datetime.now().timestamp(),
     }
     
     # Send request GET
-    requests.post(api_endpoint, json=data)
+    requests.post(api_endpoint, json=data, headers=header)
     return({"status": "Notify schedule done successful"})
   except Exception as e:
     return {"status": "Notify schedule done failed", "error": str(e)}
