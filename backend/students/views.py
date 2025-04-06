@@ -58,10 +58,19 @@ def get_all_student():
         return None
 
 class StudentListView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            students = Student.objects.all()
+            if not students:
+                return Response({"error": "No students found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(StudentSerializer(students, many=True).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
     def post(self, request, *args, **kwargs):
         try:
             input_data = request.data
-            student = Student.objects.filter(student_code = input_data["student_code"])
+            student = Student.objects.filter(student_code = input_data["student_id"])
             return Response(StudentSerializer(student, many=True).data, status=status.HTTP_200_OK)
         except Student.DoesNotExist:
             return Response({"error": "Student not found."}, status=status.HTTP_404_NOT_FOUND)

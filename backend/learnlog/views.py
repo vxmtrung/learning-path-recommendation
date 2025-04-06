@@ -62,6 +62,10 @@ class LearnlogImportView(APIView):
 def get_learn_log():
     return LearnLog.objects.all()
 
+def get_learn_log_by_semester(semester):
+    # Lấy các learnlog có semester nhỏ hơn semester hiện tại
+    return LearnLog.objects.filter(semester__lt=semester)
+
 class ImportGradeView(APIView):
     def post(self, request, *args, **kwargs):
         # get file from request

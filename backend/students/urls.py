@@ -4,5 +4,5 @@ from .views import StudentImportView, StudentListView
 
 urlpatterns = [
     path('import/', StudentImportView.as_view(), name='student-import'),
-    path('get-info-by-id/', StudentListView.as_view(), name='student-info'),
+    path('get-student-info/', StudentListView.as_view(), name='student-info'),
 ]
