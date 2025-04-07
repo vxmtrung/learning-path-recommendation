@@ -95,9 +95,10 @@ def learning_path_update_process():
     student_needs = get_active_student_need()
     for student_need in student_needs:
       generate_new_learning_path(student_need)
-    switch_next_semester()
-    print("Learning path update run")
     call_notify_schedule_done()
+    noti_for_student_failed_course()
+    switch_next_semester()
+    print("Learning path update process successful")
     return {"status": "Learning path update process successful"}
   except Exception as e:
     return {"status": "Learning path update process failed", "error": e}
@@ -315,14 +316,7 @@ def noti_for_student_failed_course():
   try:
     base_url = os.getenv("baseURL")
     api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_failed_courses"
-    
-    # Prepare headers
-    header = {
-        "Content-Type": "application/json",
-        "Authorization": os.getenv("MOODLE_TOKEN"),\
-        "Accept": "application/json",
-    }
-    
+   
     # Get all log in current semester
     current_semester = Semester.objects.get(is_active=True)
     logs = LearnLog.objects.filter(semester=current_semester.semester_name, score__lt=5)
@@ -332,7 +326,7 @@ def noti_for_student_failed_course():
     for log in logs:
         student_logs.setdefault(log.student.student_code, []).append(log)
       
-    for student_code, logs in student_logs:
+    for student_code, logs in student_logs.items():
         recommend_course = []
         for log in logs:
             try:
@@ -356,12 +350,13 @@ def noti_for_student_failed_course():
             "Authorization": os.getenv("MOODLE_TOKEN"),\
             "Accept": "application/json",
         }
-        
+        failedCourses = [f'{log.course.course_code} - {log.course.course_name}' for log in logs]
+        recommendedCourses = [f'{course.course_code} - {course.course_name}' for course in recommend_course]
         # Prepate data
         data = {
             "studentid": student_code,
-            "failedCourses": logs,
-            "recommendedCourses": recommend_course,
+            "failedCourses": failedCourses,
+            "recommendedCourses": recommendedCourses,
         }
      
       
