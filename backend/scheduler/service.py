@@ -20,6 +20,8 @@ from recommend.course_tree import create_course_tree
 from recommend.recommend import recommend
 from semesters.models import Semester
 from semesters.serializers import SemesterSerializer
+from learnlog.models import LearnLog
+from courses.models import Course
 import pandas as pd
 import numpy as np
 import pickle
@@ -309,4 +311,62 @@ def call_notify_schedule_done():
   except Exception as e:
     return {"status": "Notify schedule done failed", "error": str(e)}
         
-  
+def noti_for_student_failed_course():
+  try:
+    base_url = os.getenv("baseURL")
+    api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_failed_courses"
+    
+    # Prepare headers
+    header = {
+        "Content-Type": "application/json",
+        "Authorization": os.getenv("MOODLE_TOKEN"),\
+        "Accept": "application/json",
+    }
+    
+    # Get all log in current semester
+    current_semester = Semester.objects.get(is_active=True)
+    logs = LearnLog.objects.filter(semester=current_semester.semester_name, score__lt=5)
+    
+    # Group log by student
+    student_logs = {}
+    for log in logs:
+        student_logs.setdefault(log.student.student_code, []).append(log)
+      
+    for student_code, logs in student_logs:
+        recommend_course = []
+        for log in logs:
+            try:
+                with open("course_similarity.pkl", "rb") as f:
+                    course_similarities = pickle.load(f)
+                    similar_courses = sorted(course_similarities.get(log.course.course_code, {}).items(), key=lambda x: x[1], reverse=True)
+                    count_course = 0
+                    
+                    for rcm_course_code, similarity in similar_courses:
+                        rcm_course = Course.objects.get(course_code=rcm_course_code)
+                        if rcm_course.semester <= log.course.semester:
+                            recommend_course.append(rcm_course)
+                            count_course += 1
+                            if count_course == 3:
+                                break
+            except Exception as e:
+                return {"status": "Notify for student with recommend course failed", "error": str(e)}
+        # Prepare headers
+        header = {
+            "Content-Type": "application/json",
+            "Authorization": os.getenv("MOODLE_TOKEN"),\
+            "Accept": "application/json",
+        }
+        
+        # Prepate data
+        data = {
+            "studentid": student_code,
+            "failedCourses": logs,
+            "recommendedCourses": recommend_course,
+        }
+     
+      
+        # Call API notify
+        requests.post(api_endpoint, json=data, headers=header)
+    return({"status": "Notify for student with recommend course successful"})
+  except Exception as e:
+    return {"status": "Notify for student with recommend course failed", "error": str(e)}

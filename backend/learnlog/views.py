@@ -98,55 +98,58 @@ class ImportGradeView(APIView):
 
                 learnlogs.append(LearnLog(**learnlog_data))
                    
-                if float(learnlog_data["score"]) < 5:
-                    base_url = os.getenv("baseURL")
-                    api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_failed_courses"
+                # if float(learnlog_data["score"]) < 5:
+                #     base_url = os.getenv("baseURL")
+                #     api_endpoint = f"{base_url}/webservice/restful/server.php/block_learning_path_recommendation_notify_failed_courses"
                     
-                    recommend_course = []
-                    try:
-                        with open("course_similarity.pkl", "rb") as f:
-                            course_similarities = pickle.load(f)
-                            similar_courses = sorted(course_similarities.get(learnlog_data['course'].course_code, {}).items(), key=lambda x: x[1], reverse=True)
-                            count_course = 0
+                #     recommend_course = []
+                #     try:
+                #         with open("course_similarity.pkl", "rb") as f:
+                #             course_similarities = pickle.load(f)
+                #             similar_courses = sorted(course_similarities.get(learnlog_data['course'].course_code, {}).items(), key=lambda x: x[1], reverse=True)
+                #             count_course = 0
                         
-                            for rcm_course_code, similarity in similar_courses:
-                                rcm_course = Course.objects.get(course_code=rcm_course_code)
-                                if rcm_course.semester <= course.semester:
-                                    recommend_course.append(rcm_course_code)
-                                    count_course += 1
-                                    if count_course == 5:
-                                        break
+                #             for rcm_course_code, similarity in similar_courses:
+                #                 rcm_course = Course.objects.get(course_code=rcm_course_code)
+                #                 if rcm_course.semester <= course.semester:
+                #                     recommend_course.append(rcm_course_code)
+                #                     count_course += 1
+                #                     if count_course == 5:
+                #                         break
 
-                    except Exception as e:
-                        print(str(e))
+                #     except Exception as e:
+                #         print(str(e))
                         
-                    # Prepare headers
-                    header = {
-                        "Content-Type": "application/json",
-                        "Authorization": os.getenv("MOODLE_TOKEN"),\
-                        "Accept": "application/json",
-                    }
-                    # Prepate data
-                    data = {
-                        "studentid": learnlog_data["student"].student_code,
-                        "failedCourses": [
-                            learnlog_data["course"].course_code
-                        ],
-                        "recommendedCourses": recommend_course,
-                    }
+                #     # Prepare headers
+                #     header = {
+                #         "Content-Type": "application/json",
+                #         "Authorization": os.getenv("MOODLE_TOKEN"),\
+                #         "Accept": "application/json",
+                #     }
+                #     # Prepate data
+                #     data = {
+                #         "studentid": learnlog_data["student"].student_code,
+                #         "failedCourses": [
+                #             {
+                #                 "course_code": learnlog_data["course"].course_code,
+                #                 "course_name": learnlog_data["course"].course_name
+                #             }
+                #         ],
+                #         "recommendedCourses": recommend_course,
+                #     }
                     
-                    # Call API notify
-                    requests.post(api_endpoint, json=data, headers=header)
+                #     # Call API notify
+                #     requests.post(api_endpoint, json=data, headers=header)
                     
                     
                 # Khi danh sách đạt batch_size, insert vào DB
-                # if len(learnlogs) >= batch_size:
-                #     LearnLog.objects.bulk_create(learnlogs)
-                #     learnlogs.clear()
+                if len(learnlogs) >= batch_size:
+                    LearnLog.objects.bulk_create(learnlogs)
+                    learnlogs.clear()
 
             # Insert phần còn lại nếu có
-            # if learnlogs:
-            #     LearnLog.objects.bulk_create(learnlogs)
+            if learnlogs:
+                LearnLog.objects.bulk_create(learnlogs)
 
             return Response({"status": "Import successful"}, status=status.HTTP_201_CREATED)
 
