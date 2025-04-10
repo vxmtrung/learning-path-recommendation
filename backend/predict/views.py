@@ -166,7 +166,10 @@ class TestingAPIView(APIView):
                 year_data[year]["predict"].append(float(predict_score))
 
             # Tính toán lỗi động
-            results = {}
+            results = {
+                "number_of_students": len(student_data),
+                "number_of_courses": len(course_data),
+            }
             for year, scores in year_data.items():
                 if scores["true"] and scores["predict"]:
                     mae = mean_absolute_error(scores["true"], scores["predict"])
@@ -229,7 +232,9 @@ class TestingAPIView(APIView):
                 year_data[year]["predict"].append(float(predict_score))
 
             # Tính toán lỗi động
-            results = {}
+            results = {
+                "number_of_courses": len(learn_log),
+            }
             for year, scores in year_data.items():
                 if scores["true"] and scores["predict"]:
                     mae = mean_absolute_error(scores["true"], scores["predict"])
