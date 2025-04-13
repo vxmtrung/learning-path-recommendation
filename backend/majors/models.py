@@ -11,6 +11,7 @@ class Major(models.Model):
         to_field='faculty_code',
         related_name='majors'
     )
+    is_active = models.BooleanField(default=True)
     
     def __str__(self):
         return f"{self.major_name} ({self.major_id})"

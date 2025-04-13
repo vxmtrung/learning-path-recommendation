@@ -14,6 +14,7 @@ class Student(models.Model):
         related_name='students'
     )
     GPA = models.FloatField(default=0)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.student_name

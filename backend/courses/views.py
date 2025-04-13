@@ -83,3 +83,116 @@ def get_all_course():
         return Course.objects.all()
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class GetCourseView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            course = Course.objects.filter(is_active=True)
+            serializer = CourseSerializer(course, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AddCourseView(APIView):
+    def post(self, request, *args, **kwargs):
+        course_code = request.data.get('course_code')
+        course_name = request.data.get('course_name')
+        semester = request.data.get('semester')
+        count_learner = request.data.get('count_learner')
+        average_score = request.data.get('average_score')
+        credit = request.data.get('credit')
+        note = request.data.get('note')
+        description = request.data.get('description')
+        major_ids = request.data.get('majors').split('|')
+        try:
+            course = Course(course_code=course_code, course_name=course_name, semester=semester, count_learner=count_learner, average_score=average_score, credit=credit, note=note, description=description)
+            course.save()
+            majors = Major.objects.filter(major_id__in=major_ids)
+            course.majors.set(majors)
+            return Response({"status": "Course added successfully"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class UpdateCourseView(APIView):
+    def post(self, request, *args, **kwargs):
+        course_code = request.query_params.get('course_code')
+        course_name = request.data.get('course_name')
+        semester = request.data.get('semester')
+        credit = request.data.get('credit')
+        description = request.data.get('description')
+        prerequisites = request.data.get('prerequisites')
+        major_ids = request.data.get('majors').split('|')
+        try:
+            course = Course.objects.get(course_code=course_code, is_active=True)
+            if not course:
+                return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            course.course_code = course_code
+            course.course_name = course_name
+            course.semester = semester
+            course.credit = credit
+            course.description = description
+            course.prerequisites = prerequisites
+            majors = Major.objects.filter(major_id__in=major_ids)
+            course.majors.set(majors)
+            course.save()
+            return Response({"status": "Course updated successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class DeleteCourseView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            course_code = request.query_params.get('course_code')
+            course = Course.objects.get(course_code=course_code, is_active=True)
+            if not course:
+                return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            course.is_active = False
+            course.save()
+            return Response({"status": "Course deleted successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetCoureByGroupCourseView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            group_course_code = request.query_params.get('group_course_code')
+            group_course = GroupCourse.objects.get(group_course_code=group_course_code, is_active=True)
+            courses = Course.objects.filter(group_course=group_course, is_active=True)
+            serializer = CourseSerializer(courses, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AddCourseToGroupCourseView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            group_course_code = request.data.get('group_course_code')
+            course_code = request.data.get('course_code')
+            
+            group_course = GroupCourse.objects.get(group_course_code=group_course_code, is_active=True)
+            course = Course.objects.get(course_code=course_code, is_active=True)
+            
+            course.group_course = group_course
+            course.save()
+            
+            return Response({"status": "Courses added to group course successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class RemoveCourseFromGroupCourseView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            group_course_code = request.data.get('group_course_code')
+            course_code = request.data.get('course_code')
+            
+            # group_course = GroupCourse.objects.get(group_course_code=group_course_code, is_active=True)
+            course = Course.objects.get(course_code=course_code, is_active=True)
+    
+            course.group_course = None
+            course.save()
+            
+            return Response({"status": "Courses removed from group course successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

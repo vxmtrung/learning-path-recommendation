@@ -51,3 +51,54 @@ class MajorListView(APIView):
             return Response(MajorSerializer(majors, many=True).data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class GetMajorView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            majors = Major.objects.filter(is_active=True)
+            serializer = MajorSerializer(majors, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AddMajorView(APIView):
+    def post(self, request, *args, **kwargs):
+        major_code = request.data.get('major_code')
+        major_name = request.data.get('major_name')
+        faculty_code = request.data.get('faculty_code')
+        try:
+            faculty = get_object_or_404(Faculty, faculty_code=faculty_code)
+            if faculty is None:
+                return Response({"error": "Faculty not found"}, status=status.HTTP_404_NOT_FOUND)
+            major = Major(major_code=major_code, major_name=major_name, faculty=faculty)
+            major.save()
+            return Response({"status": "Major added successfully"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class UpdateMajorView(APIView):
+    def post(self, request, *args, **kwargs):
+        major_id = request.query_params.get('major_id')
+        major_name = request.data.get('major_name')
+        try:
+            major = Major.objects.get(major_id=major_id, is_active=True)
+            major.major_name = major_name
+            major.save()
+            return Response({"status": "Update successful"}, status=status.HTTP_200_OK)
+        except Major.DoesNotExist:
+            return Response({"error": "Major not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class DeleteMajorView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            major_id = request.query_params.get('major_id')
+            major = Major.objects.get(major_id=major_id, is_active=True)
+            major.is_active = False
+            major.save()
+            return Response({"status": "Major deleted successfully"}, status=status.HTTP_200_OK)
+        except Major.DoesNotExist:
+            return Response({"error": "Major not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

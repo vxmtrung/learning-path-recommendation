@@ -32,5 +32,7 @@ urlpatterns = [
     path('student-needs/', include('student_needs.urls')),
     path('scheduled-tasks/', include('scheduler.urls')),
     path('evaluations/', include('evaluations.urls')),
-    path('semesters/', include('semesters.urls'))
+    path('semesters/', include('semesters.urls')),
+    path('rules/', include('rules.urls')),
+    path('group-rules/', include('group_rule.urls')),
 ]

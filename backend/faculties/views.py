@@ -39,3 +39,51 @@ class FacultyImportView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetFacultyView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            faculties = Faculty.objects.filter(is_active=True)
+            serializer = FacultySerializer(faculties, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AddFacultyView(APIView):
+    def post(self, request, *args, **kwargs):
+        faculty_code = request.data.get('faculty_code')
+        faculty_name = request.data.get('faculty_name')
+        try:
+            faculty = Faculty(faculty_code=faculty_code, faculty_name=faculty_name)
+            faculty.save()
+            return Response({"status": "Faculty added successfully"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class UpdateFacultyView(APIView):
+    def post(self, request, *args, **kwargs):
+        faculty_id = request.query_params.get('faculty_id')
+        faculty_name = request.data.get('faculty_name')
+        try:
+            faculty = Faculty.objects.get(faculty_id=faculty_id, is_active=True)
+            faculty.faculty_name = faculty_name
+            faculty.save()
+            return Response({"status": "Update successful"}, status=status.HTTP_200_OK)
+        except Faculty.DoesNotExist:
+            return Response({"error": "Faculty not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class DeleteFacultyView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            faculty_id = request.query_params.get('faculty_id')
+            faculty = Faculty.objects.get(faculty_id=faculty_id, is_active=True)
+            faculty.is_active = False
+            faculty.save()
+            return Response({"status": "Faculty deleted successfully"}, status=status.HTTP_200_OK)
+        except Faculty.DoesNotExist:
+            return Response({"error": "Faculty not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
