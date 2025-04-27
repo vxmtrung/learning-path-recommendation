@@ -16,12 +16,21 @@ class GetRuleByGroupCourseView(APIView):
             if not group_course_code:
                 return Response({"error": "group_course_code is required"}, status=status.HTTP_400_BAD_REQUEST)
            
-            rules = GroupRule.objects.filter(group=group_course_code).select_related('rule')
-            rules = [gr.rule for gr in rules]
-            serializer = RuleSerializer(rules, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return_data = []
+            rules = GroupRule.objects.filter(group=group_course_code)
+            for rule in rules:
+                data = {
+                    "rule_code": rule.rule.rule_code,
+                    "rule_name": rule.rule.rule_name,
+                    "rule_description": rule.rule.rule_description,
+                    "is_active": True,
+                    "parameter": rule.parameter,
+                }
+                return_data.append(data)
+            return Response(return_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+           
         
 class AddNewRuleToGroupCourseView(APIView):
     def post(self, request):

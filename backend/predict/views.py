@@ -257,3 +257,36 @@ class TestingAPIView(APIView):
         except Exception as e:
             return Response({"status": "Test failed", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
+        
+class DiagramAPIView(APIView):
+  def get(self, request):
+    learnlogs = LearnLog.objects.all()
+    student_course = {}
+    for learnlog in learnlogs:
+        student = learnlog.student
+        if student not in student_course:
+            student_course[student] = 0
+        student_course[student] += 1
+    
+    num_subjects_per_student = list(student_course.values())
+    # Tạo histogram
+    plt.figure(figsize=(10, 6))
+    bins = range(max(num_subjects_per_student) + 2) # Tạo bins phù hợp với số môn học
+    plt.hist(num_subjects_per_student, bins=bins, edgecolor='black', align='left', rwidth=0.8)
+
+    # Đặt các ticks trên trục x cho mỗi số môn học
+    plt.xticks(range(max(num_subjects_per_student) + 1))
+
+    # Đặt tiêu đề và nhãn
+    plt.title('Biểu đồ số môn học mà sinh viên đã học')
+    plt.xlabel('Số môn học đã học')
+    plt.ylabel('Số sinh viên')
+
+    # Hiển thị lưới (tùy chọn)
+    plt.grid(axis='y', alpha=0.5)
+
+    # Hiển thị biểu đồ
+    plt.tight_layout()
+    plt.show()
+    
+    return Response("Diagram generated", status=status.HTTP_200_OK)

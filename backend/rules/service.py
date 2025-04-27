@@ -3,7 +3,7 @@ from group_rule.models import GroupRule
 def map_group_rule():
     group_course = GroupCourse.objects.filter(is_active=True)
     for group in group_course:
-        rules = GroupRule.objects.filter(group=group).filter(is_active=True)
+        rules = GroupRule.objects.filter(group=group)
         for rule in rules:
             if rule.rule.rule_code == "group_completion_rule":	
                 group.total_course = int(rule.parameter['total'])
