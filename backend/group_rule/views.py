@@ -47,15 +47,13 @@ class AddNewRuleToGroupCourseView(APIView):
             rule = Rule.objects.filter(rule_code=rule_code, is_active=True)
             if not rule:
                 return Response({"error": "Rule not found"}, status=status.HTTP_404_NOT_FOUND)
-            serializer = GroupRuleSerializer(data={
-                    "group": group_course_code,
-                    "rule": rule_code,
-                    "parameter": parameter
-                })
-            if serializer.is_valid():
-                serializer.save()
-                return Response({"message": "Add New Group Course - Rule Successful"}, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            new_group_rule = GroupRule(
+                group = group_course.first(),
+                rule = rule.first(),
+                parameter = parameter
+            )
+            new_group_rule.save()
+            return Response({"message": "Add New Group Course - Rule Successful"}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         

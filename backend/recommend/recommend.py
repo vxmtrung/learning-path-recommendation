@@ -149,6 +149,7 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
     else:
         # print(course_graph.course_node.course_name)
         if is_subject_learned(course_graph.course_node, learner_log, unlearned_course):
+            # print("Môn đã học --- ", course_graph.course_node.course_name)
             learned_course.append(course_graph.course_node)
         
             if course_graph.course_node.group_course.group_course_code == "group_c":
@@ -159,6 +160,7 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
                             major_course[1] = major_course[1] - 1
                 
         else:
+            # print("Môn chưa học --- ", course_graph.course_node.course_name)
             if course_graph.course_node.group_course.group_course_code == "group_c":
                 major_of_course = course_graph.course_node.majors.all()
                 for major in major_of_course:
@@ -199,10 +201,17 @@ def check_prerequisite_and_add_learning_path(english_level, course, leaner_log, 
     ### Case 1: Subject prerequisite was learned (In leaner_log) -> add learning_path this semester
     ### Case 2: Subject prerequisite was recommend (Not in unlearned_course) -> add learning_path next semester
     english_course = get_english_course_level(course.course_code)
+
     if course.prerequisites and english_level >= english_course:
-        if course.prerequisites in leaner_log:
-            add_course_to_learning_path_in_case_prerequisite_learned(course, unlearned_course)
-        else:
+        check_log_in_learner_log = False
+        for log in leaner_log:
+            if log.course == course.prerequisites:
+                # add_course_to_learning_path_with_english(course, english_course, unlearned_course)
+                add_course_to_learning_path(course, unlearned_course)
+                check_log_in_learner_log = True
+                break
+        if not check_log_in_learner_log:
+            # add_course_to_learning_path_with_prerequisite_and_english(course, english_course, unlearned_course) 
             add_course_to_learning_path_in_case_prerequisite_unlearned(course, unlearned_course)
     
     ### Check English
@@ -211,10 +220,18 @@ def check_prerequisite_and_add_learning_path(english_level, course, leaner_log, 
     
     ### Check subject prerequisite and English
     if course.prerequisites and english_level < english_course:
-        if course.prerequisites in leaner_log:
-            add_course_to_learning_path_with_english(course, english_course, unlearned_course)
-        else:
-            add_course_to_learning_path_with_prerequisite_and_english(course, english_course, unlearned_course)
+        check_log_in_learner_log = False
+        for log in leaner_log:
+            if log.course == course.prerequisites:
+                add_course_to_learning_path_with_english(course, english_course, unlearned_course)
+                check_log_in_learner_log = True
+                break
+        if not check_log_in_learner_log:
+            add_course_to_learning_path_with_prerequisite_and_english(course, english_course, unlearned_course) 
+        # if course.prerequisites in leaner_log:
+        #     add_course_to_learning_path_with_english(course, english_course, unlearned_course)
+        # else:
+        #     add_course_to_learning_path_with_prerequisite_and_english(course, english_course, unlearned_course)
     
     if not course.prerequisites and english_level >= english_course:
         add_course_to_learning_path(course, unlearned_course)
@@ -448,12 +465,13 @@ def add_course_to_learning_path(course, unlearned_course):
         credit = credit_in_semester
         if int(element.semester) % 10 != 3:
             for semester in main_semester:
-                if element.semester == int(semester["semester"]):
+                if int(element.semester) == int(semester["semester"]):
                     credit = int(semester["credit"])
         else:
             for semester in summer_semester:
                 if element.semester == int(semester["semester"]):
                     credit = int(semester["credit"])
+        
         if element.credit + course.credit <= credit:
             element.courses.append(course)
             added_course = True
