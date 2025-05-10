@@ -90,6 +90,9 @@ def generate_learn_log_student_2(index = 1):
             elif course == "CO1007":
                 score = round(random.uniform(6.5, 8.5), 1)
                 semester = semester - index*10 + 1
+            elif course == "CO1027":    
+                score = round(random.uniform(7, 9), 1)
+                semester = semester - index*10 + 1
             elif course == "PH1007":
                 score = round(random.uniform(8, 10), 1)
                 semester = semester - index*10 + 1
@@ -108,9 +111,7 @@ def generate_learn_log_student_2(index = 1):
             elif course == "CO2003":
                 score = round(random.uniform(7, 8.5), 1)
                 semester = semester
-            elif course == "CO1027":    
-                score = round(random.uniform(7, 9), 1)
-                semester = semester
+            
             
             with open("learn_log.txt", "a", encoding="utf-8") as file:
                 file.write(f"{2310001 + i},{course},{score},{1},{semester}\n")       
@@ -128,9 +129,6 @@ def generate_learn_log_student_3(index = 2):
             if course == "LA1003":
                 score = round(random.uniform(9, 10), 1)
                 semester = semester - index*10
-            elif course == "CO1027":    
-                score = round(random.uniform(7, 9), 1)
-                semester = semester
             elif course == "MT1003":
                 score = round(random.uniform(7, 10), 1)
                 semester = semester - index*10
@@ -154,6 +152,9 @@ def generate_learn_log_student_3(index = 2):
                 semester = semester - index*10 + 1
             elif course == "CO1007":
                 score = round(random.uniform(6.5, 8.5), 1)
+                semester = semester - index*10 + 1
+            elif course == "CO1027":    
+                score = round(random.uniform(7, 9), 1)
                 semester = semester - index*10 + 1
             elif course == "PH1007":
                 score = round(random.uniform(8, 10), 1)
@@ -229,9 +230,6 @@ def generate_learn_log_student_4(index = 3):
             if course == "LA1003":
                 score = round(random.uniform(9, 10), 1)
                 semester = semester - index*10
-            elif course == "CO1027":    
-                score = round(random.uniform(7, 9), 1)
-                semester = semester
             elif course == "MT1003":
                 score = round(random.uniform(7, 10), 1)
                 semester = semester - index*10
@@ -256,6 +254,9 @@ def generate_learn_log_student_4(index = 3):
             elif course == "CO1007":
                 score = round(random.uniform(6.5, 8.5), 1)
                 semester = semester - index*10 + 1
+            elif course == "CO1027":    
+                score = round(random.uniform(7, 9), 1)
+                semester = semester
             elif course == "PH1007":
                 score = round(random.uniform(8, 10), 1)
                 semester = semester - index*10 + 1
@@ -342,42 +343,42 @@ def generate_learn_log_student_4(index = 3):
                 file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")    
         
         # Xử lý ảnh và Thị giác máy tính
-        if i in [0,1,2,3]:
-            speciality_courses = ["CO3043", "CO3045", "CO3049", "CO3051", "CO3057", "CO3059", "CO3089", "CO3117"]
-            selected_courses = random.sample(speciality_courses, 2)  
-            for course in selected_courses:
-                score = round(random.uniform(7, 9), 1)
-                semester = 241
+        # if i in [0,1,2,3]:
+        #     speciality_courses = ["CO3043", "CO3045", "CO3049", "CO3051", "CO3057", "CO3059", "CO3089", "CO3117"]
+        #     selected_courses = random.sample(speciality_courses, 2)  
+        #     for course in selected_courses:
+        #         score = round(random.uniform(7, 9), 1)
+        #         semester = 241
                 
-                with open("learn_log.txt", "a", encoding="utf-8") as file:
-                    file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
+        #         with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #             file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
         
         # Trí tuệ nhân tạo ứng dụng
-        if i in [4,5,6,7]:
-            speciality_courses = ["CO3029", "CO3035", "CO3037", "CO3041", "CO3043", "CO3045", "CO3049", "CO3051", "CO3061", "CO3085", "CO3089", "CO3117", "CO4025"]
-            selected_courses = random.sample(speciality_courses, 2)  
-            for course in selected_courses:
-                score = round(random.uniform(7, 9), 1)
-                semester = 241
+        # if i in [4,5,6,7]:
+        #     speciality_courses = ["CO3029", "CO3035", "CO3037", "CO3041", "CO3043", "CO3045", "CO3049", "CO3051", "CO3061", "CO3085", "CO3089", "CO3117", "CO4025"]
+        #     selected_courses = random.sample(speciality_courses, 2)  
+        #     for course in selected_courses:
+        #         score = round(random.uniform(7, 9), 1)
+        #         semester = 241
                 
-                with open("learn_log.txt", "a", encoding="utf-8") as file:
-                    file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
+        #         with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #             file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
         
         # Mật mã và An ninh mạng
-        if i in [8,9,10,11]:
-            speciality_courses = ["CO3047", "CO3049", "CO3051", "CO3069", "CO3083", "CO3089"]
-            selected_courses = random.sample(speciality_courses, 2)  
-            for course in selected_courses:
-                score = round(random.uniform(7, 9), 1)
-                semester = 241
+        # if i in [8,9,10,11]:
+        #     speciality_courses = ["CO3047", "CO3049", "CO3051", "CO3069", "CO3083", "CO3089"]
+        #     selected_courses = random.sample(speciality_courses, 2)  
+        #     for course in selected_courses:
+        #         score = round(random.uniform(7, 9), 1)
+        #         semester = 241
                 
-                with open("learn_log.txt", "a", encoding="utf-8") as file:
-                    file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
+        #         with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #             file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
            
         # Công nghệ Phần mềm
-        if i in [12,13,14,15]:
+        if i in range(20):
             speciality_courses = ["CO3011", "CO3013", "CO3015", "CO3017", "CO3065", "CO3089", "CO3115"]
-            selected_courses = random.sample(speciality_courses, 2)  
+            selected_courses = random.sample(speciality_courses, 3)  
             for course in selected_courses:
                 score = round(random.uniform(7, 9), 1)
                 semester = 241
@@ -386,20 +387,20 @@ def generate_learn_log_student_4(index = 3):
                     file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
 
         # Công nghệ Dữ liệu Bảo mật và Trí tuệ Kinh doanh
-        if i in [16,17,18,19]:
-            speciality_courses = ["CO3021", "CO3023", "CO3027", "CO3029", "CO3033", "CO3115", "CO4031", "CO4033", "CO4035", "CO4037", "CO4039"]
-            selected_courses = random.sample(speciality_courses, 2)  
-            for course in selected_courses:
-                score = round(random.uniform(7, 9), 1)
-                semester = 241
+        # if i in [16,17,18,19]:
+        #     speciality_courses = ["CO3021", "CO3023", "CO3027", "CO3029", "CO3033", "CO3115", "CO4031", "CO4033", "CO4035", "CO4037", "CO4039"]
+        #     selected_courses = random.sample(speciality_courses, 2)  
+        #     for course in selected_courses:
+        #         score = round(random.uniform(7, 9), 1)
+        #         semester = 241
                 
-                with open("learn_log.txt", "a", encoding="utf-8") as file:
-                    file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
+        #         with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #             file.write(f"{2110001 + i},{course},{score},{1},{semester}\n")
                     
         # Group D
-        group_d_course = ["IM1013", "IM3001", "IM1027", "IM1023", "IM1025"]
-        with open("learn_log.txt", "a", encoding="utf-8") as file:
-                file.write(f"{2110001 + i},{random.sample(group_d_course, 1)[0]},{round(random.uniform(7, 9), 1)},{1},{241}\n")
+        # group_d_course = ["IM1013", "IM3001", "IM1027", "IM1023", "IM1025"]
+        # with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #         file.write(f"{2110001 + i},{random.sample(group_d_course, 1)[0]},{round(random.uniform(7, 9), 1)},{1},{241}\n")
             
 def generate_learn_log_student_5(index = 4):
     courses = ["LA1003", "MT1003", "PH1003", "CO1005", "CO1023",
@@ -418,9 +419,6 @@ def generate_learn_log_student_5(index = 4):
             if course == "LA1003":
                 score = round(random.uniform(9, 10), 1)
                 semester = semester - index*10
-            elif course == "CO1027":    
-                score = round(random.uniform(7, 9), 1)
-                semester = semester
             elif course == "MT1003":
                 score = round(random.uniform(7, 10), 1)
                 semester = semester - index*10
@@ -444,6 +442,9 @@ def generate_learn_log_student_5(index = 4):
                 semester = semester - index*10 + 1
             elif course == "CO1007":
                 score = round(random.uniform(6.5, 8.5), 1)
+                semester = semester - index*10 + 1
+            elif course == "CO1027":    
+                score = round(random.uniform(7, 9), 1)
                 semester = semester - index*10 + 1
             elif course == "PH1007":
                 score = round(random.uniform(8, 10), 1)
@@ -537,94 +538,94 @@ def generate_learn_log_student_5(index = 4):
                 file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")    
         
         # Xử lý ảnh và Thị giác máy tính
-        if i in [0,1,2,3]:
-            speciality_courses = ["CO3043", "CO3045", "CO3049", "CO3051", "CO3057", "CO3059", "CO3089", "CO3117"]
-            selected_courses = random.sample(speciality_courses, 5)  
-            with open("learn_log.txt", "a", encoding="utf-8") as file:
-                # 2 môn đầu: semester = 231
-                for course in selected_courses[:2]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 231
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        # if i in [0,1,2,3]:
+        #     speciality_courses = ["CO3043", "CO3045", "CO3049", "CO3051", "CO3057", "CO3059", "CO3089", "CO3117"]
+        #     selected_courses = random.sample(speciality_courses, 5)  
+        #     with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #         # 2 môn đầu: semester = 231
+        #         for course in selected_courses[:2]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 231
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
 
-                # 3 môn sau: semester = 232
-                for course in selected_courses[2:]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 232
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        #         # 3 môn sau: semester = 232
+        #         for course in selected_courses[2:]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 232
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
         
         # Trí tuệ nhân tạo ứng dụng
-        if i in [4,5,6,7]:
-            speciality_courses = ["CO3029", "CO3035", "CO3037", "CO3041", "CO3043", "CO3045", "CO3049", "CO3051", "CO3061", "CO3085", "CO3089", "CO3117", "CO4025"]
-            selected_courses = random.sample(speciality_courses, 5)  
-            with open("learn_log.txt", "a", encoding="utf-8") as file:
-                # 2 môn đầu: semester = 231
-                for course in selected_courses[:2]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 231
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        # if i in [4,5,6,7]:
+        #     speciality_courses = ["CO3029", "CO3035", "CO3037", "CO3041", "CO3043", "CO3045", "CO3049", "CO3051", "CO3061", "CO3085", "CO3089", "CO3117", "CO4025"]
+        #     selected_courses = random.sample(speciality_courses, 5)  
+        #     with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #         # 2 môn đầu: semester = 231
+        #         for course in selected_courses[:2]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 231
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
 
-                # 3 môn sau: semester = 232
-                for course in selected_courses[2:]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 232
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        #         # 3 môn sau: semester = 232
+        #         for course in selected_courses[2:]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 232
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
         
         # Mật mã và An ninh mạng
-        if i in [8,9,10,11]:
-            speciality_courses = ["CO3047", "CO3049", "CO3051", "CO3069", "CO3083", "CO3089"]
-            selected_courses = random.sample(speciality_courses, 5)  
-            with open("learn_log.txt", "a", encoding="utf-8") as file:
-                # 2 môn đầu: semester = 231
-                for course in selected_courses[:2]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 231
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        # if i in [8,9,10,11]:
+        #     speciality_courses = ["CO3047", "CO3049", "CO3051", "CO3069", "CO3083", "CO3089"]
+        #     selected_courses = random.sample(speciality_courses, 5)  
+        #     with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #         # 2 môn đầu: semester = 231
+        #         for course in selected_courses[:2]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 231
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
 
-                # 3 môn sau: semester = 232
-                for course in selected_courses[2:]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 232
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        #         # 3 môn sau: semester = 232
+        #         for course in selected_courses[2:]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 232
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
            
         # Công nghệ Phần mềm
-        if i in [12,13,14,15]:
+        if i in range(20):
             speciality_courses = ["CO3011", "CO3013", "CO3015", "CO3017", "CO3065", "CO3089", "CO3115"]
             selected_courses = random.sample(speciality_courses, 5)  
             with open("learn_log.txt", "a", encoding="utf-8") as file:
-                # 2 môn đầu: semester = 231
-                for course in selected_courses[:2]:  
+                # 3 môn đầu: semester = 231
+                for course in selected_courses[:3]:
                     score = round(random.uniform(7, 9), 1)
                     semester = 231
                     file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
 
-                # 3 môn sau: semester = 232
-                for course in selected_courses[2:]:  
+                # 2 môn sau: semester = 232
+                for course in selected_courses[3:]:
                     score = round(random.uniform(7, 9), 1)
                     semester = 232
                     file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
                     
         # Công nghệ Dữ liệu Bảo mật và Trí tuệ Kinh doanh
-        if i in [16,17,18,19]:
-            speciality_courses = ["CO3021", "CO3023", "CO3027", "CO3029", "CO3033", "CO3115", "CO4031", "CO4033", "CO4035", "CO4037", "CO4039"]
-            selected_courses = random.sample(speciality_courses, 5)  
-            with open("learn_log.txt", "a", encoding="utf-8") as file:
-                # 2 môn đầu: semester = 231
-                for course in selected_courses[:2]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 231
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        # if i in [16,17,18,19]:
+        #     speciality_courses = ["CO3021", "CO3023", "CO3027", "CO3029", "CO3033", "CO3115", "CO4031", "CO4033", "CO4035", "CO4037", "CO4039"]
+        #     selected_courses = random.sample(speciality_courses, 5)  
+        #     with open("learn_log.txt", "a", encoding="utf-8") as file:
+        #         # 2 môn đầu: semester = 231
+        #         for course in selected_courses[:2]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 231
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
 
-                # 3 môn sau: semester = 232
-                for course in selected_courses[2:]:  
-                    score = round(random.uniform(7, 9), 1)
-                    semester = 232
-                    file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
+        #         # 3 môn sau: semester = 232
+        #         for course in selected_courses[2:]:  
+        #             score = round(random.uniform(7, 9), 1)
+        #             semester = 232
+        #             file.write(f"{2010001 + i},{course},{score},{1},{semester}\n")
                     
         # Group D
         group_d_course = ["IM1013", "IM3001", "IM1027", "IM1023", "IM1025"]
         with open("learn_log.txt", "a", encoding="utf-8") as file:
-                file.write(f"{2010001 + i},{random.sample(group_d_course, 1)[0]},{round(random.uniform(7, 9), 1)},{1},{231}\n")
+                file.write(f"{2010001 + i},{random.sample(group_d_course, 1)[0]},{round(random.uniform(7, 9), 1)},{1},{232}\n")
                           
 
 def generate_learn_log():
@@ -668,6 +669,8 @@ def geneate_learn_log_to_test():
         
         
     
-generate_student_data()
-# generate_learn_log()
+# generate_student_data()
+generate_learn_log()
 # geneate_learn_log_to_test()
+
+

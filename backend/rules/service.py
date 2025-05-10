@@ -12,6 +12,8 @@ def map_group_rule():
                 group.alternative = rule.parameter['alternative']
                 if rule.parameter['alternative']:
                     group.alternative_group = GroupCourse.objects.get(group_course_code=rule.parameter['group_alternative'])
+                else:
+                    group.alternative_group = None
             elif rule.rule.rule_code == "mandatory_rule":
                 group.mandatory = rule.parameter['mandatory']
             elif rule.rule.rule_code == "specifically_rule":

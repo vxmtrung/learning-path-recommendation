@@ -173,6 +173,8 @@ def travel_course_graph(learner, learner_log, unlearned_course, course_graph, al
             if course_graph.course_node.group_course:
                 for group in all_group_course:
                     if group.group_course_code == course_graph.course_node.group_course.group_course_code:
+                        print("Môn chưa học --- ", course_graph.course_node.course_name)
+                        print(int(group.minimum_course))
                         if int(group.minimum_course) <= 0:
                             return
                         else:
